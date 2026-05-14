@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "press-api-spec"
+version = "0.1.0"
+description = "REST API specifications for the Press platform"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.0",
+    "typing_extensions>=4.12",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "mypy",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+
+[tool.setuptools.packages.find]
+include = ["press_api_spec*"]
