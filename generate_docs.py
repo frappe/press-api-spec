@@ -16,11 +16,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel
-
+from press_api_spec.bench_manager_service_v1 import (
+    ALL_ENDPOINTS as BENCH_MANAGER_ENDPOINTS,
+)
 from press_api_spec.compute_service_v1 import ALL_ENDPOINTS as COMPUTE_ENDPOINTS
-from press_api_spec.compute_service_v1.base import Endpoint, EmptyResponse, ErrorResponse
+from press_api_spec.compute_service_v1.base import (
+    EmptyResponse,
+    Endpoint,
+    ErrorResponse,
+)
 from press_api_spec.proxy_service_v1 import ALL_ENDPOINTS as PROXY_ENDPOINTS
+from pydantic import BaseModel
 
 DOCS_DIR = Path(__file__).parent / "docs"
 HTML_FILE = DOCS_DIR / "index.html"
@@ -52,7 +58,13 @@ SERVICES: list[ServiceSpec] = [
         description="REST API for domain registration, TLS management, and routing.",
         endpoints=PROXY_ENDPOINTS,
     ),
-    # Add more services here as needed
+    ServiceSpec(
+        slug="bench-manager-service-v1",
+        title="Bench Manager Service",
+        version="0.1.0",
+        description="REST API for managing press benches and their dependencies.",
+        endpoints=BENCH_MANAGER_ENDPOINTS,
+    ),
 ]
 
 
@@ -80,7 +92,9 @@ def main() -> None:
     print(f"\nopen {HTML_FILE}")
 
 
-def build_spec(svc: ServiceSpec, schema_cache: dict[str, dict[str, Any]]) -> dict[str, Any]:
+def build_spec(
+    svc: ServiceSpec, schema_cache: dict[str, dict[str, Any]]
+) -> dict[str, Any]:
     paths: dict[str, Any] = {}
 
     for ep in svc.endpoints:
@@ -116,7 +130,9 @@ def build_spec(svc: ServiceSpec, schema_cache: dict[str, dict[str, Any]]) -> dic
     }
 
 
-def _collect_schemas(model: type[BaseModel], schema_cache: dict[str, dict[str, Any]]) -> None:
+def _collect_schemas(
+    model: type[BaseModel], schema_cache: dict[str, dict[str, Any]]
+) -> None:
     full = model.model_json_schema(
         mode="serialization", ref_template="#/components/schemas/{model}"
     )
@@ -129,7 +145,9 @@ def _collect_schemas(model: type[BaseModel], schema_cache: dict[str, dict[str, A
         schema_cache[name] = full
 
 
-def _ref(model: type[BaseModel], schema_cache: dict[str, dict[str, Any]]) -> dict[str, str]:
+def _ref(
+    model: type[BaseModel], schema_cache: dict[str, dict[str, Any]]
+) -> dict[str, str]:
     _collect_schemas(model, schema_cache)
     return {"$ref": f"#/components/schemas/{model.__name__}"}
 
@@ -211,7 +229,9 @@ def _error_responses(schema_cache: dict[str, dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _deref(obj: Any, schemas: dict[str, Any], _visited: frozenset[str] = frozenset()) -> Any:
+def _deref(
+    obj: Any, schemas: dict[str, Any], _visited: frozenset[str] = frozenset()
+) -> Any:
     """Recursively inline all #/components/schemas/$ref pointers."""
     if isinstance(obj, dict):
         if "$ref" in obj:
