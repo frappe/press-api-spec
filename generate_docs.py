@@ -92,20 +92,18 @@ def main() -> None:
     print(f"\nopen {HTML_FILE}")
 
 
-def build_spec(
-    svc: ServiceSpec, schema_cache: dict[str, dict[str, Any]]
-) -> dict[str, Any]:
+def build_spec(svc: ServiceSpec, schema_cache: dict[str, dict[str, Any]]) -> dict[str, Any]:
     paths: dict[str, Any] = {}
 
     for ep in svc.endpoints:
-        opath = _path_to_openapi(ep.path)
+        opath = _path_to_openapi(ep.full_path or ep.path)
         method = ep.method.value.lower()
 
         operation: dict[str, Any] = {
             "operationId": ep.name,
             "summary": ep.summary,
             "tags": list(ep.tags),
-            "parameters": _path_params(ep.path) + _query_params(ep, schema_cache),
+            "parameters": _path_params(ep.full_path or ep.path) + _query_params(ep, schema_cache),
             "responses": {
                 "200": _response_body(ep, schema_cache),
                 **_error_responses(schema_cache),
@@ -130,9 +128,7 @@ def build_spec(
     }
 
 
-def _collect_schemas(
-    model: type[BaseModel], schema_cache: dict[str, dict[str, Any]]
-) -> None:
+def _collect_schemas(model: type[BaseModel], schema_cache: dict[str, dict[str, Any]]) -> None:
     full = model.model_json_schema(
         mode="serialization", ref_template="#/components/schemas/{model}"
     )
@@ -145,9 +141,7 @@ def _collect_schemas(
         schema_cache[name] = full
 
 
-def _ref(
-    model: type[BaseModel], schema_cache: dict[str, dict[str, Any]]
-) -> dict[str, str]:
+def _ref(model: type[BaseModel], schema_cache: dict[str, dict[str, Any]]) -> dict[str, str]:
     _collect_schemas(model, schema_cache)
     return {"$ref": f"#/components/schemas/{model.__name__}"}
 
@@ -229,9 +223,7 @@ def _error_responses(schema_cache: dict[str, dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _deref(
-    obj: Any, schemas: dict[str, Any], _visited: frozenset[str] = frozenset()
-) -> Any:
+def _deref(obj: Any, schemas: dict[str, Any], _visited: frozenset[str] = frozenset()) -> Any:
     """Recursively inline all #/components/schemas/$ref pointers."""
     if isinstance(obj, dict):
         if "$ref" in obj:
