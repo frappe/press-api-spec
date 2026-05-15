@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TypeAlias
+
 from press_api_spec.compute_service_v1.base import Endpoint, EndpointGroup, Method
 from press_api_spec.compute_service_v1.models.volume import (
     AttachVolumeRequest,
@@ -21,7 +23,7 @@ from press_api_spec.compute_service_v1.models.volume import (
 )
 
 __all__ = [
-    "volumes",
+    "VolumeGroup",
     "CreateVolume",
     "ListVolumes",
     "GetVolume",
@@ -34,101 +36,92 @@ __all__ = [
 ]
 
 
-volumes = EndpointGroup(prefix="/volumes", tags=("Volumes",))
+VolumeGroup = EndpointGroup(prefix="/volumes", tags=("Volumes",))
 
-CreateVolume = volumes.add(
-    Endpoint(
-        method=Method.POST,
-        path="",
-        body=CreateVolumeRequest,
-        response=CreateVolumeResponse,
-        name="create_volume",
-        summary="Create a new block volume.",
-    )
-)
+class CreateVolume(Endpoint):
+    method = Method.POST
+    path = ""
+    name = "create_volume"
+    summary = "Create a new block volume."
+    Body: TypeAlias = CreateVolumeRequest
+    Response: TypeAlias = CreateVolumeResponse
 
-ListVolumes = volumes.add(
-    Endpoint(
-        method=Method.GET,
-        path="",
-        query=ListVolumesQuery,
-        response=ListVolumesResponse,
-        name="list_volumes",
-        summary="Return a paginated list of volumes.",
-    )
-)
+VolumeGroup.add(CreateVolume)
 
-GetVolume = volumes.add(
-    Endpoint(
-        method=Method.GET,
-        path="/<volume_id>",
-        response=GetVolumeResponse,
-        name="get_volume",
-        summary="Fetch a single volume by id.",
-    )
-)
+class ListVolumes(Endpoint):
+    method = Method.GET
+    path = ""
+    name = "list_volumes"
+    summary = "Return a paginated list of volumes."
+    Response: TypeAlias = ListVolumesResponse
+    Query: TypeAlias = ListVolumesQuery
 
-UpdateVolume = volumes.add(
-    Endpoint(
-        method=Method.PATCH,
-        path="/<volume_id>",
-        body=UpdateVolumeRequest,
-        response=UpdateVolumeResponse,
-        name="update_volume",
-        summary="Update mutable volume attributes (description).",
-    )
-)
+VolumeGroup.add(ListVolumes)
 
-DeleteVolume = volumes.add(
-    Endpoint(
-        method=Method.DELETE,
-        path="/<volume_id>",
-        response=DeleteVolumeResponse,
-        name="delete_volume",
-        summary="Delete a volume.",
-    )
-)
+class GetVolume(Endpoint):
+    method = Method.GET
+    path = "/<volume_id>"
+    name = "get_volume"
+    summary = "Fetch a single volume by id."
+    Response: TypeAlias = GetVolumeResponse
 
-AttachVolume = volumes.add(
-    Endpoint(
-        method=Method.POST,
-        path="/<volume_id>/actions/attach",
-        body=AttachVolumeRequest,
-        response=AttachVolumeResponse,
-        name="attach_volume",
-        summary="Attach a volume to an instance.",
-    )
-)
+VolumeGroup.add(GetVolume)
 
-DetachVolume = volumes.add(
-    Endpoint(
-        method=Method.POST,
-        path="/<volume_id>/actions/detach",
-        body=DetachVolumeRequest,
-        response=DetachVolumeResponse,
-        name="detach_volume",
-        summary="Detach a volume from its instance.",
-    )
-)
+class UpdateVolume(Endpoint):
+    method = Method.PATCH
+    path = "/<volume_id>"
+    name = "update_volume"
+    summary = "Update mutable volume attributes (description)."
+    Body: TypeAlias = UpdateVolumeRequest
+    Response: TypeAlias = UpdateVolumeResponse
 
-ResizeVolume = volumes.add(
-    Endpoint(
-        method=Method.POST,
-        path="/<volume_id>/actions/resize",
-        body=ResizeVolumeRequest,
-        response=ResizeVolumeResponse,
-        name="resize_volume",
-        summary="Resize a volume.",
-    )
-)
+VolumeGroup.add(UpdateVolume)
 
-SnapshotVolume = volumes.add(
-    Endpoint(
-        method=Method.POST,
-        path="/<volume_id>/actions/snapshot",
-        body=SnapshotVolumeRequest,
-        response=SnapshotVolumeResponse,
-        name="snapshot_volume",
-        summary="Create a snapshot of a volume.",
-    )
-)
+class DeleteVolume(Endpoint):
+    method = Method.DELETE
+    path = "/<volume_id>"
+    name = "delete_volume"
+    summary = "Delete a volume."
+    Response: TypeAlias = DeleteVolumeResponse
+
+VolumeGroup.add(DeleteVolume)
+
+class AttachVolume(Endpoint):
+    method = Method.POST
+    path = "/<volume_id>/actions/attach"
+    name = "attach_volume"
+    summary = "Attach a volume to an instance."
+    Body: TypeAlias = AttachVolumeRequest
+    Response: TypeAlias = AttachVolumeResponse
+
+VolumeGroup.add(AttachVolume)
+
+class DetachVolume(Endpoint):
+    method = Method.POST
+    path = "/<volume_id>/actions/detach"
+    name = "detach_volume"
+    summary = "Detach a volume from its instance."
+    Body: TypeAlias = DetachVolumeRequest
+    Response: TypeAlias = DetachVolumeResponse
+
+VolumeGroup.add(DetachVolume)
+
+class ResizeVolume(Endpoint):
+    method = Method.POST
+    path = "/<volume_id>/actions/resize"
+    name = "resize_volume"
+    summary = "Resize a volume."
+    Body: TypeAlias = ResizeVolumeRequest
+    Response: TypeAlias = ResizeVolumeResponse
+
+VolumeGroup.add(ResizeVolume)
+
+class SnapshotVolume(Endpoint):
+    method = Method.POST
+    path = "/<volume_id>/actions/snapshot"
+    name = "snapshot_volume"
+    summary = "Create a snapshot of a volume."
+    Body: TypeAlias = SnapshotVolumeRequest
+    Response: TypeAlias = SnapshotVolumeResponse
+
+VolumeGroup.add(SnapshotVolume)

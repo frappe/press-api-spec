@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TypeAlias
+
 from press_api_spec.proxy_service_v1.base import Endpoint, EndpointGroup, Method
 from press_api_spec.proxy_service_v1.models.action import (
     GetActionResponse,
@@ -8,30 +10,28 @@ from press_api_spec.proxy_service_v1.models.action import (
 )
 
 __all__ = [
-    "actions",
+    "ActionGroup",
     "ListActions",
     "GetAction",
 ]
 
-actions = EndpointGroup(prefix="/actions", tags=("Actions",))
+ActionGroup = EndpointGroup(prefix="/actions", tags=("Actions",))
 
-ListActions = actions.add(
-    Endpoint(
-        method=Method.GET,
-        path="",
-        query=ListActionsQuery,
-        response=ListActionsResponse,
-        name="list_actions",
-        summary="List all action records across all resources",
-    )
-)
+class ListActions(Endpoint):
+    method = Method.GET
+    path = ""
+    name = "list_actions"
+    summary = "List all action records across all resources"
+    Response: TypeAlias = ListActionsResponse
+    Query: TypeAlias = ListActionsQuery
 
-GetAction = actions.add(
-    Endpoint(
-        method=Method.GET,
-        path="/<action_id>",
-        response=GetActionResponse,
-        name="get_action",
-        summary="Fetch an action record by id",
-    )
-)
+ActionGroup.add(ListActions)
+
+class GetAction(Endpoint):
+    method = Method.GET
+    path = "/<action_id>"
+    name = "get_action"
+    summary = "Fetch an action record by id"
+    Response: TypeAlias = GetActionResponse
+
+ActionGroup.add(GetAction)

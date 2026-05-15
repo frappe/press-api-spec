@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TypeAlias
+
 from press_api_spec.proxy_service_v1.base import Endpoint, EndpointGroup, Method
 from press_api_spec.proxy_service_v1.models.redirect import (
     CreateRedirectRequest,
@@ -12,7 +14,7 @@ from press_api_spec.proxy_service_v1.models.redirect import (
 )
 
 __all__ = [
-    "redirects",
+    "RedirectGroup",
     "CreateRedirect",
     "ListRedirects",
     "GetRedirect",
@@ -20,57 +22,52 @@ __all__ = [
     "DeleteRedirect",
 ]
 
-redirects = EndpointGroup(prefix="/proxy/domains/<domain_id>/redirects", tags=("Redirects",))
+RedirectGroup = EndpointGroup(prefix="/proxy/domains/<domain_id>/redirects", tags=("Redirects",))
 
-CreateRedirect = redirects.add(
-    Endpoint(
-        method=Method.POST,
-        path="",
-        body=CreateRedirectRequest,
-        response=CreateRedirectResponse,
-        name="create_redirect",
-        summary="Create a redirect rule for a domain",
-    )
-)
+class CreateRedirect(Endpoint):
+    method = Method.POST
+    path = ""
+    name = "create_redirect"
+    summary = "Create a redirect rule for a domain"
+    Body: TypeAlias = CreateRedirectRequest
+    Response: TypeAlias = CreateRedirectResponse
 
-ListRedirects = redirects.add(
-    Endpoint(
-        method=Method.GET,
-        path="",
-        query=ListRedirectsQuery,
-        response=ListRedirectsResponse,
-        name="list_redirects",
-        summary="List redirect rules for a domain",
-    )
-)
+RedirectGroup.add(CreateRedirect)
 
-GetRedirect = redirects.add(
-    Endpoint(
-        method=Method.GET,
-        path="/<redirect_id>",
-        response=GetRedirectResponse,
-        name="get_redirect",
-        summary="Get a redirect rule",
-    )
-)
+class ListRedirects(Endpoint):
+    method = Method.GET
+    path = ""
+    name = "list_redirects"
+    summary = "List redirect rules for a domain"
+    Response: TypeAlias = ListRedirectsResponse
+    Query: TypeAlias = ListRedirectsQuery
 
-UpdateRedirect = redirects.add(
-    Endpoint(
-        method=Method.PATCH,
-        path="/<redirect_id>",
-        body=UpdateRedirectRequest,
-        response=CreateRedirectResponse,
-        name="update_redirect",
-        summary="Update a redirect rule",
-    )
-)
+RedirectGroup.add(ListRedirects)
 
-DeleteRedirect = redirects.add(
-    Endpoint(
-        method=Method.DELETE,
-        path="/<redirect_id>",
-        response=DeleteRedirectResponse,
-        name="delete_redirect",
-        summary="Delete a redirect rule",
-    )
-)
+class GetRedirect(Endpoint):
+    method = Method.GET
+    path = "/<redirect_id>"
+    name = "get_redirect"
+    summary = "Get a redirect rule"
+    Response: TypeAlias = GetRedirectResponse
+
+RedirectGroup.add(GetRedirect)
+
+class UpdateRedirect(Endpoint):
+    method = Method.PATCH
+    path = "/<redirect_id>"
+    name = "update_redirect"
+    summary = "Update a redirect rule"
+    Body: TypeAlias = UpdateRedirectRequest
+    Response: TypeAlias = CreateRedirectResponse
+
+RedirectGroup.add(UpdateRedirect)
+
+class DeleteRedirect(Endpoint):
+    method = Method.DELETE
+    path = "/<redirect_id>"
+    name = "delete_redirect"
+    summary = "Delete a redirect rule"
+    Response: TypeAlias = DeleteRedirectResponse
+
+RedirectGroup.add(DeleteRedirect)

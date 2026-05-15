@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TypeAlias
+
 from press_api_spec.proxy_service_v1.base import Endpoint, EndpointGroup, Method
 from press_api_spec.proxy_service_v1.models.route import (
     CreateRouteRequest,
@@ -13,7 +15,7 @@ from press_api_spec.proxy_service_v1.models.route import (
 )
 
 __all__ = [
-    "routes",
+    "RouteGroup",
     "CreateRoute",
     "ListRoutes",
     "GetRoute",
@@ -21,57 +23,52 @@ __all__ = [
     "DeleteRoute",
 ]
 
-routes = EndpointGroup(prefix="/proxy/domains/<domain_id>/routes", tags=("Routes",))
+RouteGroup = EndpointGroup(prefix="/proxy/domains/<domain_id>/routes", tags=("Routes",))
 
-CreateRoute = routes.add(
-    Endpoint(
-        method=Method.POST,
-        path="",
-        body=CreateRouteRequest,
-        response=CreateRouteResponse,
-        name="create_route",
-        summary="Create a route binding a domain to a container",
-    )
-)
+class CreateRoute(Endpoint):
+    method = Method.POST
+    path = ""
+    name = "create_route"
+    summary = "Create a route binding a domain to a container"
+    Body: TypeAlias = CreateRouteRequest
+    Response: TypeAlias = CreateRouteResponse
 
-ListRoutes = routes.add(
-    Endpoint(
-        method=Method.GET,
-        path="",
-        query=ListRoutesQuery,
-        response=ListRoutesResponse,
-        name="list_routes",
-        summary="List routes for a domain",
-    )
-)
+RouteGroup.add(CreateRoute)
 
-GetRoute = routes.add(
-    Endpoint(
-        method=Method.GET,
-        path="/<route_id>",
-        response=GetRouteResponse,
-        name="get_route",
-        summary="Get route details",
-    )
-)
+class ListRoutes(Endpoint):
+    method = Method.GET
+    path = ""
+    name = "list_routes"
+    summary = "List routes for a domain"
+    Response: TypeAlias = ListRoutesResponse
+    Query: TypeAlias = ListRoutesQuery
 
-UpdateRoute = routes.add(
-    Endpoint(
-        method=Method.PATCH,
-        path="/<route_id>",
-        body=UpdateRouteRequest,
-        response=UpdateRouteResponse,
-        name="update_route",
-        summary="Update mutable route attributes (target_port)",
-    )
-)
+RouteGroup.add(ListRoutes)
 
-DeleteRoute = routes.add(
-    Endpoint(
-        method=Method.DELETE,
-        path="/<route_id>",
-        response=DeleteRouteResponse,
-        name="delete_route",
-        summary="Delete a route",
-    )
-)
+class GetRoute(Endpoint):
+    method = Method.GET
+    path = "/<route_id>"
+    name = "get_route"
+    summary = "Get route details"
+    Response: TypeAlias = GetRouteResponse
+
+RouteGroup.add(GetRoute)
+
+class UpdateRoute(Endpoint):
+    method = Method.PATCH
+    path = "/<route_id>"
+    name = "update_route"
+    summary = "Update mutable route attributes (target_port)"
+    Body: TypeAlias = UpdateRouteRequest
+    Response: TypeAlias = UpdateRouteResponse
+
+RouteGroup.add(UpdateRoute)
+
+class DeleteRoute(Endpoint):
+    method = Method.DELETE
+    path = "/<route_id>"
+    name = "delete_route"
+    summary = "Delete a route"
+    Response: TypeAlias = DeleteRouteResponse
+
+RouteGroup.add(DeleteRoute)

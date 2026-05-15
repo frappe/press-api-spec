@@ -4,17 +4,24 @@ from typing import Any
 
 from press_api_spec.compute_service_v1.base import Endpoint, EndpointGroup
 from press_api_spec.compute_service_v1.endpoints.action import *  # noqa: F401,F403
-from press_api_spec.compute_service_v1.endpoints.action import actions
+from press_api_spec.compute_service_v1.endpoints.action import ActionGroup
 from press_api_spec.compute_service_v1.endpoints.container import *  # noqa: F401,F403
-from press_api_spec.compute_service_v1.endpoints.container import containers
+from press_api_spec.compute_service_v1.endpoints.container import ContainerGroup
 from press_api_spec.compute_service_v1.endpoints.health import *  # noqa: F401,F403
-from press_api_spec.compute_service_v1.endpoints.health import health
+from press_api_spec.compute_service_v1.endpoints.health import HealthGroup
 from press_api_spec.compute_service_v1.endpoints.snapshot import *  # noqa: F401,F403
-from press_api_spec.compute_service_v1.endpoints.snapshot import snapshots
+from press_api_spec.compute_service_v1.endpoints.snapshot import SnapshotGroup
 from press_api_spec.compute_service_v1.endpoints.stack import *  # noqa: F401,F403
-from press_api_spec.compute_service_v1.endpoints.stack import stacks
+from press_api_spec.compute_service_v1.endpoints.stack import StackGroup
 from press_api_spec.compute_service_v1.endpoints.volume import *  # noqa: F401,F403
-from press_api_spec.compute_service_v1.endpoints.volume import volumes
+from press_api_spec.compute_service_v1.endpoints.volume import VolumeGroup
 
-ALL_GROUPS: list[EndpointGroup] = [stacks, containers, volumes, snapshots, health, actions]
+ALL_GROUPS: list[EndpointGroup] = [
+    StackGroup,
+    ContainerGroup,
+    VolumeGroup,
+    SnapshotGroup,
+    HealthGroup,
+    ActionGroup,
+]
 ALL_ENDPOINTS: list[Endpoint[Any, Any]] = [ep for group in ALL_GROUPS for ep in group]

@@ -165,10 +165,11 @@ def _path_params(path: str) -> list[dict[str, Any]]:
 def _query_params(
     ep: Endpoint[Any, Any], schema_cache: dict[str, dict[str, Any]]
 ) -> list[dict[str, Any]]:
-    if ep.query is None:
+    query = getattr(ep, "Query", None)
+    if query is None:
         return []
-    _collect_schemas(ep.query, schema_cache)
-    schema = ep.query.model_json_schema(
+    _collect_schemas(query, schema_cache)
+    schema = query.model_json_schema(
         mode="serialization", ref_template="#/components/schemas/{model}"
     )
     defs = schema.pop("$defs", {})
@@ -191,22 +192,24 @@ def _query_params(
 def _request_body(
     ep: Endpoint[Any, Any], schema_cache: dict[str, dict[str, Any]]
 ) -> dict[str, Any] | None:
-    if ep.body is None:
+    body = getattr(ep, "Body", None)
+    if body is None:
         return None
     return {
         "required": True,
-        "content": {"application/json": {"schema": _ref(ep.body, schema_cache)}},
+        "content": {"application/json": {"schema": _ref(body, schema_cache)}},
     }
 
 
 def _response_body(
     ep: Endpoint[Any, Any], schema_cache: dict[str, dict[str, Any]]
 ) -> dict[str, Any]:
-    if ep.response is None or ep.response is EmptyResponse:
+    response = getattr(ep, "Response", None)
+    if response is None or response is EmptyResponse:
         return {"description": "Success"}
     return {
         "description": "Success",
-        "content": {"application/json": {"schema": _ref(ep.response, schema_cache)}},
+        "content": {"application/json": {"schema": _ref(response, schema_cache)}},
     }
 
 

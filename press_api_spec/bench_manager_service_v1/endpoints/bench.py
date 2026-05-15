@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TypeAlias
+
 from press_api_spec.bench_manager_service_v1.models.bench import (
     DeleteExternalBenchPackagesRequest,
     DeleteExternalBenchPackagesResponse,
@@ -12,7 +14,7 @@ from press_api_spec.bench_manager_service_v1.models.bench import (
 from press_api_spec.compute_service_v1.base import Endpoint, EndpointGroup, Method
 
 __all__ = [
-    "bench",
+    "BenchGroup",
     "UpdateBenchDependencies",
     "AddExternalBenchPackages",
     "DeleteExternalBenchPackages",
@@ -20,51 +22,46 @@ __all__ = [
 ]
 
 
-bench = EndpointGroup(
+BenchGroup = EndpointGroup(
     prefix="/bench",
     tags=("Bench",),
 )
 
-UpdateBenchDependencies = bench.add(
-    Endpoint(
-        method=Method.PUT,
-        path="/dependencies",
-        body=UpdateBenchDependenciesRequest,
-        response=UpdateBenchDependenciesResponse,
-        name="update_bench_dependencies",
-        summary="Replace the full set of bench dependency versions (Node, Python, etc.)",
-    )
-)
+class UpdateBenchDependencies(Endpoint):
+    method = Method.PUT
+    path = "/dependencies"
+    name = "update_bench_dependencies"
+    summary = "Replace the full set of bench dependency versions (Node, Python, etc.)"
+    Body: TypeAlias = UpdateBenchDependenciesRequest
+    Response: TypeAlias = UpdateBenchDependenciesResponse
 
-AddExternalBenchPackages = bench.add(
-    Endpoint(
-        method=Method.POST,
-        path="/external-packages",
-        body=UpdateExternalBenchPackagesRequest,
-        response=UpdateExternalBenchPackagesResponse,
-        name="add_external_bench_packages",
-        summary="Add external system packages (e.g. apt) to the bench",
-    )
-)
+BenchGroup.add(UpdateBenchDependencies)
 
-DeleteExternalBenchPackages = bench.add(
-    Endpoint(
-        method=Method.DELETE,
-        path="/external-packages",
-        body=DeleteExternalBenchPackagesRequest,
-        response=DeleteExternalBenchPackagesResponse,
-        name="delete_external_bench_packages",
-        summary="Remove external system packages from the bench",
-    )
-)
+class AddExternalBenchPackages(Endpoint):
+    method = Method.POST
+    path = "/external-packages"
+    name = "add_external_bench_packages"
+    summary = "Add external system packages (e.g. apt) to the bench"
+    Body: TypeAlias = UpdateExternalBenchPackagesRequest
+    Response: TypeAlias = UpdateExternalBenchPackagesResponse
 
-UpdateBuildStatus = bench.add(
-    Endpoint(
-        method=Method.POST,
-        path="/builds/update",
-        body=UpdateBuildStatusRequest,
-        response=None,
-        name="update_build_status",
-        summary="Receive a build status callback from the CI/build system",
-    )
-)
+BenchGroup.add(AddExternalBenchPackages)
+
+class DeleteExternalBenchPackages(Endpoint):
+    method = Method.DELETE
+    path = "/external-packages"
+    name = "delete_external_bench_packages"
+    summary = "Remove external system packages from the bench"
+    Body: TypeAlias = DeleteExternalBenchPackagesRequest
+    Response: TypeAlias = DeleteExternalBenchPackagesResponse
+
+BenchGroup.add(DeleteExternalBenchPackages)
+
+class UpdateBuildStatus(Endpoint):
+    method = Method.POST
+    path = "/builds/update"
+    name = "update_build_status"
+    summary = "Receive a build status callback from the CI/build system"
+    Body: TypeAlias = UpdateBuildStatusRequest
+
+BenchGroup.add(UpdateBuildStatus)

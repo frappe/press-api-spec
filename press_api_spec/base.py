@@ -3,10 +3,9 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Generic, Iterator, TypeVar
+from typing import Any, ClassVar, Generic, Iterator, TypeVar
 
 from pydantic import BaseModel
-from typing_extensions import TypeVar as TypeVarExt
 
 __all__ = [
     "Method",
@@ -34,8 +33,6 @@ T = TypeVar("T")
 
 
 class PaginationParams(BaseModel):
-    """Standard query parameters for a paginated list endpoint."""
-
     page: int = 1
     per_page: int = 20
 
@@ -51,15 +48,11 @@ class PaginationInfo(BaseModel):
 
 
 class Paginated(BaseModel, Generic[T]):
-    """Generic paginated envelope: ``Paginated[Instance]`` etc."""
-
     items: list[T]
     pagination: PaginationInfo
 
 
 class EmptyResponse(BaseModel):
-    """Use as ``response=EmptyResponse`` for endpoints with no payload."""
-
     pass
 
 
@@ -86,92 +79,119 @@ class ErrorResponse(BaseModel):
     error: ErrorDetail
 
 
-BodyT = TypeVarExt("BodyT", bound=BaseModel, default=BaseModel)
-ResponseT = TypeVarExt("ResponseT", bound=BaseModel, default=BaseModel)
-
 _PATH_PARAM_RE = re.compile(r"<(?:(?P<conv>[a-zA-Z_]\w*):)?(?P<name>[a-zA-Z_]\w*)>")
 
 
-@dataclass(frozen=True)
-class Endpoint(Generic[BodyT, ResponseT]):
-    """Declarative description of a single HTTP endpoint."""
+class EndpointMeta(type):
+    def __call__(
+        cls,
+        method: Method,
+        path: str,
+        *,
+        body: type[BaseModel] | None = None,
+        response: type[BaseModel] | None = None,
+        query: type[BaseModel] | None = None,
+        name: str = "",
+        summary: str = "",
+        tags: tuple[str, ...] = (),
+    ) -> type[Endpoint]:
+        attrs: dict[str, Any] = {
+            "method": method,
+            "path": path,
+            "name": name,
+            "summary": summary,
+            "tags": tags,
+            "full_path": "",
+        }
+        if body is not None:
+            attrs["Body"] = body
+        if response is not None:
+            attrs["Response"] = response
+        if query is not None:
+            attrs["Query"] = query
+        return EndpointMeta(name or "Endpoint", (cls,), attrs)
 
-    method: Method
-    path: str
-    body: type[BodyT] | None = None
-    response: type[ResponseT] | None = None
-    query: type[BaseModel] | None = None
-    name: str = ""
-    summary: str = ""
-    tags: tuple[str, ...] = ()
-    full_path: str = ""
+    def __repr__(cls) -> str:
+        if cls is Endpoint:
+            return "<class 'Endpoint'>"
+        return f"<Endpoint {cls.method.value} {cls.path}>"
 
-    def path_params(self) -> list[str]:
-        return [m.group("name") for m in _PATH_PARAM_RE.finditer(self.path)]
+    def __class_getitem__(cls, item: Any) -> type:
+        return cls
 
-    def url(self, **params: Any) -> str:
-        """Render the path by substituting ``<...>`` placeholders."""
-        required = self.path_params()
+
+class Endpoint(metaclass=EndpointMeta):
+    method: ClassVar[Method]
+    path: ClassVar[str] = ""
+    name: ClassVar[str] = ""
+    summary: ClassVar[str] = ""
+    tags: ClassVar[tuple[str, ...]] = ()
+    full_path: ClassVar[str] = ""
+    Body: ClassVar[type[BaseModel]]
+    Response: ClassVar[type[BaseModel]]
+    Query: ClassVar[type[BaseModel]]
+
+    @classmethod
+    def path_params(cls) -> list[str]:
+        return [m.group("name") for m in _PATH_PARAM_RE.finditer(cls.path)]
+
+    @classmethod
+    def url(cls, **params: Any) -> str:
+        required = cls.path_params()
         missing = [p for p in required if p not in params]
         if missing:
-            raise KeyError(f"{self._label()}: missing path parameter(s) {missing}")
+            raise KeyError(f"{cls._label()}: missing path parameter(s) {missing}")
 
         def repl(match: re.Match[str]) -> str:
             return str(params[match.group("name")])
 
-        return _PATH_PARAM_RE.sub(repl, self.path)
+        return _PATH_PARAM_RE.sub(repl, cls.path)
 
-    def parse_body(self, data: Any) -> BodyT:
-        if self.body is None:
-            raise ValueError(f"{self._label()}: no body type defined")
-        return self.body.model_validate(data)
+    @classmethod
+    def parse_body(cls, data: Any) -> BaseModel:
+        if not hasattr(cls, "Body"):
+            raise ValueError(f"{cls._label()}: no Body type defined")
+        return cls.Body.model_validate(data)
 
-    def parse_response(self, data: Any) -> ResponseT:
-        if self.response is None:
-            raise ValueError(f"{self._label()}: no response type defined")
-        return self.response.model_validate(data)
+    @classmethod
+    def parse_response(cls, data: Any) -> BaseModel:
+        if not hasattr(cls, "Response"):
+            raise ValueError(f"{cls._label()}: no Response type defined")
+        return cls.Response.model_validate(data)
 
-    def parse_query(self, data: Any) -> BaseModel:
-        if self.query is None:
-            raise ValueError(f"{self._label()}: no query type defined")
-        return self.query.model_validate(data)
+    @classmethod
+    def parse_query(cls, data: Any) -> BaseModel:
+        if not hasattr(cls, "Query"):
+            raise ValueError(f"{cls._label()}: no Query type defined")
+        return cls.Query.model_validate(data)
 
-    def _label(self) -> str:
-        return self.name or f"{self.method.value} {self.path}"
-
-    def __str__(self) -> str:
-        return f"<Endpoint {self.method.value} {self.path}>"
+    @classmethod
+    def _label(cls) -> str:
+        return cls.name or f"{cls.method.value} {cls.path}"
 
 
 @dataclass
 class EndpointGroup:
     prefix: str = ""
     tags: tuple[str, ...] = ()
-    endpoints: list[Endpoint[Any, Any]] = field(default_factory=list)
+    endpoints: list[type[Endpoint]] = field(default_factory=list)
 
-    def add(self, endpoint: Endpoint[BodyT, ResponseT]) -> Endpoint[BodyT, ResponseT]:
+    def add(self, endpoint: type[Endpoint]) -> type[Endpoint]:
         if self.prefix:
             sub = endpoint.path.lstrip("/")
-            prefixed_path = self.prefix.rstrip("/") + ("/" + sub if sub else "")
+            endpoint.full_path = self.prefix.rstrip("/") + ("/" + sub if sub else "")
         else:
-            prefixed_path = endpoint.path
-        merged_tags = endpoint.tags or self.tags
-        endpoint = Endpoint(
-            method=endpoint.method,
-            path=endpoint.path,
-            body=endpoint.body,
-            response=endpoint.response,
-            query=endpoint.query,
-            name=endpoint.name,
-            summary=endpoint.summary,
-            tags=merged_tags,
-            full_path=prefixed_path,
-        )
+            endpoint.full_path = endpoint.path
+        if not endpoint.tags:
+            endpoint.tags = self.tags
         self.endpoints.append(endpoint)
         return endpoint
 
-    def __iter__(self) -> Iterator[Endpoint[Any, Any]]:
+    def __iter__(self) -> Iterator[type[Endpoint]]:
         return iter(self.endpoints)
+
+    def __len__(self) -> int:
+        return len(self.endpoints)
 
     def __len__(self) -> int:
         return len(self.endpoints)

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TypeAlias
+
 from press_api_spec.compute_service_v1.base import Endpoint, EndpointGroup, Method
 from press_api_spec.compute_service_v1.models.stack import (
     CreateStackRequest,
@@ -16,7 +18,7 @@ from press_api_spec.compute_service_v1.models.stack import (
 )
 
 __all__ = [
-    "stacks",
+    "StackGroup",
     "CreateStack",
     "ListStacks",
     "GetStack",
@@ -29,98 +31,89 @@ __all__ = [
 ]
 
 
-stacks = EndpointGroup(prefix="/stacks", tags=("Stacks",))
+StackGroup = EndpointGroup(prefix="/stacks", tags=("Stacks",))
 
-CreateStack = stacks.add(
-    Endpoint(
-        method=Method.POST,
-        path="",
-        body=CreateStackRequest,
-        response=CreateStackResponse,
-        name="create_stack",
-        summary="Create a new compute stack",
-    )
-)
+class CreateStack(Endpoint):
+    method = Method.POST
+    path = ""
+    name = "create_stack"
+    summary = "Create a new compute stack"
+    Body: TypeAlias = CreateStackRequest
+    Response: TypeAlias = CreateStackResponse
 
-ListStacks = stacks.add(
-    Endpoint(
-        method=Method.GET,
-        path="",
-        query=ListStacksQuery,
-        response=ListStacksResponse,
-        name="list_stacks",
-        summary="Return a paginated list of stacks",
-    )
-)
+StackGroup.add(CreateStack)
 
-GetStack = stacks.add(
-    Endpoint(
-        method=Method.GET,
-        path="/<stack_id>",
-        response=GetStackResponse,
-        name="get_stack",
-        summary="Fetch a single stack by id",
-    )
-)
+class ListStacks(Endpoint):
+    method = Method.GET
+    path = ""
+    name = "list_stacks"
+    summary = "Return a paginated list of stacks"
+    Response: TypeAlias = ListStacksResponse
+    Query: TypeAlias = ListStacksQuery
 
-UpdateStack = stacks.add(
-    Endpoint(
-        method=Method.PATCH,
-        path="/<stack_id>",
-        body=UpdateStackRequest,
-        response=UpdateStackResponse,
-        name="update_stack",
-        summary="Update mutable stack attributes (name, description)",
-    )
-)
+StackGroup.add(ListStacks)
 
-DeleteStack = stacks.add(
-    Endpoint(
-        method=Method.DELETE,
-        path="/<stack_id>",
-        response=DeleteStackResponse,
-        name="delete_stack",
-        summary="Delete a stack",
-    )
-)
+class GetStack(Endpoint):
+    method = Method.GET
+    path = "/<stack_id>"
+    name = "get_stack"
+    summary = "Fetch a single stack by id"
+    Response: TypeAlias = GetStackResponse
 
-ResizeStack = stacks.add(
-    Endpoint(
-        method=Method.POST,
-        path="/<stack_id>/actions/resize",
-        body=ResizeStackRequest,
-        response=ResizeStackResponse,
-        name="resize_stack",
-        summary="Resize a stack",
-    )
-)
+StackGroup.add(GetStack)
 
-StartStack = stacks.add(
-    Endpoint(
-        method=Method.POST,
-        path="/<stack_id>/actions/start",
-        response=StackActionResponse,
-        name="start_stack",
-        summary="Start a stopped stack",
-    )
-)
+class UpdateStack(Endpoint):
+    method = Method.PATCH
+    path = "/<stack_id>"
+    name = "update_stack"
+    summary = "Update mutable stack attributes (name, description)"
+    Body: TypeAlias = UpdateStackRequest
+    Response: TypeAlias = UpdateStackResponse
 
-StopStack = stacks.add(
-    Endpoint(
-        method=Method.POST,
-        path="/<stack_id>/actions/stop",
-        response=StackActionResponse,
-        name="stop_stack",
-        summary="Stop a running stack",
-    )
-)
+StackGroup.add(UpdateStack)
 
-RestartStack = stacks.add(
-    Endpoint(
-        method=Method.POST,
-        path="/<stack_id>/actions/restart",
-        response=StackActionResponse,
-        name="restart_stack",
-        summary="Restart a stack",
-    )
-)
+class DeleteStack(Endpoint):
+    method = Method.DELETE
+    path = "/<stack_id>"
+    name = "delete_stack"
+    summary = "Delete a stack"
+    Response: TypeAlias = DeleteStackResponse
+
+StackGroup.add(DeleteStack)
+
+class ResizeStack(Endpoint):
+    method = Method.POST
+    path = "/<stack_id>/actions/resize"
+    name = "resize_stack"
+    summary = "Resize a stack"
+    Body: TypeAlias = ResizeStackRequest
+    Response: TypeAlias = ResizeStackResponse
+
+StackGroup.add(ResizeStack)
+
+class StartStack(Endpoint):
+    method = Method.POST
+    path = "/<stack_id>/actions/start"
+    name = "start_stack"
+    summary = "Start a stopped stack"
+    Response: TypeAlias = StackActionResponse
+
+StackGroup.add(StartStack)
+
+class StopStack(Endpoint):
+    method = Method.POST
+    path = "/<stack_id>/actions/stop"
+    name = "stop_stack"
+    summary = "Stop a running stack"
+    Response: TypeAlias = StackActionResponse
+
+StackGroup.add(StopStack)
+
+class RestartStack(Endpoint):
+    method = Method.POST
+    path = "/<stack_id>/actions/restart"
+    name = "restart_stack"
+    summary = "Restart a stack"
+    Response: TypeAlias = StackActionResponse
+
+StackGroup.add(RestartStack)
