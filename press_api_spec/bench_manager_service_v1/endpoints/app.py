@@ -5,6 +5,8 @@ from typing import TypeAlias
 from press_api_spec.bench_manager_service_v1.models import (
     AddAppRequest,
     AddAppResponse,
+    AppWebhookRequest,
+    AppWebhookResponse,
     HealthResponse,
     RemoveAppRequest,
     RemoveAppResponse,
@@ -16,6 +18,7 @@ __all__ = [
     "AddApp",
     "RemoveApp",
     "Health",
+    "AppWebhook",
 ]
 
 
@@ -23,6 +26,7 @@ AppGroup = EndpointGroup(
     prefix="/apps",
     tags=("Apps",),
 )
+
 
 class AddApp(Endpoint):
     method = Method.POST
@@ -32,7 +36,9 @@ class AddApp(Endpoint):
     Body: TypeAlias = AddAppRequest
     Response: TypeAlias = AddAppResponse
 
+
 AppGroup.add(AddApp)
+
 
 class RemoveApp(Endpoint):
     method = Method.POST
@@ -42,7 +48,9 @@ class RemoveApp(Endpoint):
     Body: TypeAlias = RemoveAppRequest
     Response: TypeAlias = RemoveAppResponse
 
+
 AppGroup.add(RemoveApp)
+
 
 class Health(Endpoint):
     method = Method.GET
@@ -51,4 +59,17 @@ class Health(Endpoint):
     summary = "Sanity check for the bench manager app service"
     Response: TypeAlias = HealthResponse
 
+
 AppGroup.add(Health)
+
+
+class AppWebhook(Endpoint):
+    method = Method.POST
+    path = "/webhook"
+    name = "app_webhook"
+    summary = "Endpoint to receive webhook events for apps and trigger corresponding actions"
+    Body: TypeAlias = AppWebhookRequest
+    Response: TypeAlias = AppWebhookResponse
+
+
+AppGroup.add(AppWebhook)

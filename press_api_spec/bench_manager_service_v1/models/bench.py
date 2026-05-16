@@ -11,11 +11,15 @@ __all__ = [
     "UpdateBenchDependenciesResponse",
     "ExternalPackageManager",
     "ExternalBenchPackage",
-    "UpdateExternalBenchPackagesRequest",
-    "UpdateExternalBenchPackagesResponse",
     "DeleteExternalBenchPackagesRequest",
     "DeleteExternalBenchPackagesResponse",
     "UpdateBuildStatusRequest",
+    "AddExternalBenchPackagesRequest",
+    "AddExternalBenchPackagesResponse",
+    "AddEnvVarRequest",
+    "AddEnvVarResponse",
+    "RemoveEnvVarRequest",
+    "RemoveEnvVarResponse",
 ]
 
 BenchDependencyName = typing.Literal[
@@ -79,7 +83,7 @@ class ExternalBenchPackage(BaseModel):
     package: str = Field(examples=["libpq-dev", "wkhtmltopdf", "redis-tools"])
 
 
-class UpdateExternalBenchPackagesRequest(BaseModel):
+class AddExternalBenchPackagesRequest(BaseModel):
     model_config = ConfigDict(
         json_schema_extra={
             "examples": [
@@ -96,16 +100,48 @@ class UpdateExternalBenchPackagesRequest(BaseModel):
     external_packages: list[ExternalBenchPackage]
 
 
-class UpdateExternalBenchPackagesResponse(BaseModel):
-    message: str = Field(examples=["Packages updated successfully"])
+class AddExternalBenchPackagesResponse(BaseModel):
+    message: str = Field(examples=["Packages deleted successfully"])
 
 
 # Semantically identical payload, aliased for endpoint clarity
-DeleteExternalBenchPackagesRequest = UpdateExternalBenchPackagesRequest
+DeleteExternalBenchPackagesRequest = AddExternalBenchPackagesRequest
+DeleteExternalBenchPackagesResponse = AddExternalBenchPackagesResponse
 
 
-class DeleteExternalBenchPackagesResponse(BaseModel):
-    message: str = Field(examples=["Packages updated successfully"])
+class AddEnvVarRequest(BaseModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {"key": "REDIS_URL", "value": "redis://localhost:6379"},
+                {"key": "SECRET_KEY", "value": "supersecret"},
+            ]
+        }
+    )
+
+    key: str = Field(examples=["REDIS_URL", "SECRET_KEY"])
+    value: str = Field(examples=["redis://localhost:6379", "supersecret"])
+
+
+class AddEnvVarResponse(BaseModel):
+    message: str = Field(examples=["Environment variable added successfully"])
+
+
+class RemoveEnvVarRequest(BaseModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {"key": "REDIS_URL"},
+                {"key": "SECRET_KEY"},
+            ]
+        }
+    )
+
+    key: str = Field(examples=["REDIS_URL", "SECRET_KEY"])
+
+
+class RemoveEnvVarResponse(BaseModel):
+    message: str = Field(examples=["Environment variable removed successfully"])
 
 
 class BuildStatus(str):

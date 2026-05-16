@@ -3,13 +3,17 @@ from __future__ import annotations
 from typing import TypeAlias
 
 from press_api_spec.bench_manager_service_v1.models.bench import (
+    AddEnvVarRequest,
+    AddEnvVarResponse,
+    AddExternalBenchPackagesRequest,
+    AddExternalBenchPackagesResponse,
     DeleteExternalBenchPackagesRequest,
     DeleteExternalBenchPackagesResponse,
+    RemoveEnvVarRequest,
+    RemoveEnvVarResponse,
     UpdateBenchDependenciesRequest,
     UpdateBenchDependenciesResponse,
     UpdateBuildStatusRequest,
-    UpdateExternalBenchPackagesRequest,
-    UpdateExternalBenchPackagesResponse,
 )
 from press_api_spec.compute_service_v1.base import Endpoint, EndpointGroup, Method
 
@@ -19,6 +23,8 @@ __all__ = [
     "AddExternalBenchPackages",
     "DeleteExternalBenchPackages",
     "UpdateBuildStatus",
+    "AddEnvVar",
+    "RemoveEnvVar",
 ]
 
 
@@ -26,6 +32,7 @@ BenchGroup = EndpointGroup(
     prefix="/bench",
     tags=("Bench",),
 )
+
 
 class UpdateBenchDependencies(Endpoint):
     method = Method.PUT
@@ -35,17 +42,21 @@ class UpdateBenchDependencies(Endpoint):
     Body: TypeAlias = UpdateBenchDependenciesRequest
     Response: TypeAlias = UpdateBenchDependenciesResponse
 
+
 BenchGroup.add(UpdateBenchDependencies)
+
 
 class AddExternalBenchPackages(Endpoint):
     method = Method.POST
     path = "/external-packages"
     name = "add_external_bench_packages"
     summary = "Add external system packages (e.g. apt) to the bench"
-    Body: TypeAlias = UpdateExternalBenchPackagesRequest
-    Response: TypeAlias = UpdateExternalBenchPackagesResponse
+    Body: TypeAlias = AddExternalBenchPackagesRequest
+    Response: TypeAlias = AddExternalBenchPackagesResponse
+
 
 BenchGroup.add(AddExternalBenchPackages)
+
 
 class DeleteExternalBenchPackages(Endpoint):
     method = Method.DELETE
@@ -55,7 +66,27 @@ class DeleteExternalBenchPackages(Endpoint):
     Body: TypeAlias = DeleteExternalBenchPackagesRequest
     Response: TypeAlias = DeleteExternalBenchPackagesResponse
 
+
 BenchGroup.add(DeleteExternalBenchPackages)
+
+
+class AddEnvVar(Endpoint):
+    method = Method.POST
+    path = "/env-vars"
+    name = "add_env_var"
+    summary = "Add environment variables to the bench"
+    Body: TypeAlias = AddEnvVarRequest
+    Response: TypeAlias = AddEnvVarResponse
+
+
+class RemoveEnvVar(Endpoint):
+    method = Method.DELETE
+    path = "/env-vars"
+    name = "remove_env_var"
+    summary = "Remove environment variables from the bench"
+    Body: TypeAlias = RemoveEnvVarRequest
+    Response: TypeAlias = RemoveEnvVarResponse
+
 
 class UpdateBuildStatus(Endpoint):
     method = Method.POST
@@ -63,5 +94,6 @@ class UpdateBuildStatus(Endpoint):
     name = "update_build_status"
     summary = "Receive a build status callback from the CI/build system"
     Body: TypeAlias = UpdateBuildStatusRequest
+
 
 BenchGroup.add(UpdateBuildStatus)
