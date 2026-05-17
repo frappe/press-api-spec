@@ -25,6 +25,7 @@ from press_api_spec.compute_service_v1.base import (
     Endpoint,
     ErrorResponse,
 )
+from press_api_spec.node_agent_service_v1 import ALL_ENDPOINTS as NODE_AGENT_ENDPOINTS
 from press_api_spec.proxy_service_v1 import ALL_ENDPOINTS as PROXY_ENDPOINTS
 from pydantic import BaseModel
 
@@ -64,6 +65,13 @@ SERVICES: list[ServiceSpec] = [
         version="0.1.0",
         description="REST API for managing press benches and their dependencies.",
         endpoints=BENCH_MANAGER_ENDPOINTS,
+    ),
+    ServiceSpec(
+        slug="node-agent-service-v1",
+        title="Node Agent Service",
+        version="0.1.0",
+        description="REST API exposed by the Press node agent for health probing, agent discovery refresh, and authorization checks.",
+        endpoints=NODE_AGENT_ENDPOINTS,
     ),
 ]
 
