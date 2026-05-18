@@ -110,6 +110,7 @@ class Volume(BaseModel):
     )
 
     id: str
+    name: str = Field(examples=["postgres-data", "app-logs"])
     description: str = Field(examples=["PostgreSQL data", "Redis cache"])
     size: int = Field(examples=[10, 100, 500])
     iops: int = Field(default=0, examples=[3000, 16000])
@@ -161,6 +162,7 @@ class CreateVolumeRequest(BaseModel):
         }
     )
 
+    name: str = Field(examples=["postgres-data", "app-logs"])
     description: str = Field(examples=["PostgreSQL data", "Redis cache"])
     size: int = Field(examples=[10, 100, 500])
     iops: int = Field(default=0, examples=[3000, 16000])

@@ -40,6 +40,7 @@ __all__ = [
 
 StackGroup = EndpointGroup(prefix="/api/stacks", tags=("Stacks",))
 
+
 class CreateStack(Endpoint):
     method = Method.POST
     path = ""
@@ -48,7 +49,9 @@ class CreateStack(Endpoint):
     Body: TypeAlias = CreateStackRequest
     Response: TypeAlias = CreateStackResponse
 
+
 StackGroup.add(CreateStack)
+
 
 class ListStacks(Endpoint):
     method = Method.GET
@@ -58,7 +61,9 @@ class ListStacks(Endpoint):
     Response: TypeAlias = ListStacksResponse
     Query: TypeAlias = ListStacksQuery
 
+
 StackGroup.add(ListStacks)
+
 
 class GetStack(Endpoint):
     method = Method.GET
@@ -67,17 +72,21 @@ class GetStack(Endpoint):
     summary = "Fetch a single stack by id"
     Response: TypeAlias = GetStackResponse
 
+
 StackGroup.add(GetStack)
+
 
 class UpdateStack(Endpoint):
     method = Method.PATCH
     path = "/<stack_id>"
     name = "update_stack"
-    summary = "Update mutable stack attributes (name, description)"
+    summary = "Update mutable stack attributes (description)"
     Body: TypeAlias = UpdateStackRequest
     Response: TypeAlias = UpdateStackResponse
 
+
 StackGroup.add(UpdateStack)
+
 
 class DeleteStack(Endpoint):
     method = Method.DELETE
@@ -86,7 +95,9 @@ class DeleteStack(Endpoint):
     summary = "Delete a stack"
     Response: TypeAlias = DeleteStackResponse
 
+
 StackGroup.add(DeleteStack)
+
 
 class ResizeStack(Endpoint):
     method = Method.POST
@@ -96,7 +107,9 @@ class ResizeStack(Endpoint):
     Body: TypeAlias = ResizeStackRequest
     Response: TypeAlias = ResizeStackResponse
 
+
 StackGroup.add(ResizeStack)
+
 
 class StartStack(Endpoint):
     method = Method.POST
@@ -105,7 +118,9 @@ class StartStack(Endpoint):
     summary = "Start a stopped stack"
     Response: TypeAlias = StackActionResponse
 
+
 StackGroup.add(StartStack)
+
 
 class StopStack(Endpoint):
     method = Method.POST
@@ -114,7 +129,9 @@ class StopStack(Endpoint):
     summary = "Stop a running stack"
     Response: TypeAlias = StackActionResponse
 
+
 StackGroup.add(StopStack)
+
 
 class RestartStack(Endpoint):
     method = Method.POST
@@ -122,6 +139,7 @@ class RestartStack(Endpoint):
     name = "restart_stack"
     summary = "Restart a stack"
     Response: TypeAlias = StackActionResponse
+
 
 StackGroup.add(RestartStack)
 
@@ -134,6 +152,7 @@ class ListStackActions(Endpoint):
     Response: TypeAlias = ListActionsResponse
     Query: TypeAlias = ListActionsQuery
 
+
 StackGroup.add(ListStackActions)
 
 
@@ -143,5 +162,6 @@ class GetStackAction(Endpoint):
     name = "get_stack_action"
     summary = "Fetch a stack action record by id"
     Response: TypeAlias = GetActionResponse
+
 
 StackGroup.add(GetStackAction)

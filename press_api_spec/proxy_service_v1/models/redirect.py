@@ -12,6 +12,7 @@ __all__ = [
     "CreateRedirectRequest",
     "UpdateRedirectRequest",
     "CreateRedirectResponse",
+    "UpdateRedirectResponse",
     "ListRedirectsQuery",
     "ListRedirectsResponse",
     "GetRedirectResponse",
@@ -89,6 +90,10 @@ class UpdateRedirectRequest(BaseModel):
 
 
 class CreateRedirectResponse(BaseModel):
+    redirect: RedirectRule
+
+
+class UpdateRedirectResponse(BaseModel):
     redirect: RedirectRule
 
 

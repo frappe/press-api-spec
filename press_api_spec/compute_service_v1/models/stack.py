@@ -9,7 +9,7 @@ from press_api_spec.compute_service_v1.base import (
     Paginated,
     PaginationParams,
 )
-from press_api_spec.compute_service_v1.models.container import CreateContainerRequest
+from press_api_spec.compute_service_v1.models.container import Container, CreateContainerRequest
 
 __all__ = [
     "Runtime",
@@ -88,8 +88,15 @@ class Stack(BaseModel):
     )
 
     id: str = Field(description="Server-generated unique identifier")
-    name: str = Field(examples=["my-app", "production-api"], description="User-provided identifier, set at creation only")
-    description: str | None = Field(default=None, examples=["Production API stack"], description="Arbitrary user-provided description")
+    name: str = Field(
+        examples=["my-app", "production-api"],
+        description="User-provided identifier, set at creation only",
+    )
+    description: str | None = Field(
+        default=None,
+        examples=["Production API stack"],
+        description="Arbitrary user-provided description",
+    )
     status: StackStatus = StackStatus.PENDING
     runtime: Runtime = Runtime.CONTAINER
     networking: NetworkingMode = NetworkingMode.HOST
@@ -99,6 +106,7 @@ class Stack(BaseModel):
         description="Network ID for overlay mode; required when networking is 'overlay'",
     )
     resources: StackResources = StackResources()
+    containers: list[Container] = Field(default_factory=list)
     created_at_unix: int
     updated_at_unix: int
 
@@ -162,7 +170,10 @@ class CreateStackRequest(BaseModel):
                                 "memory_max": 8.0,
                             },
                             "volume_mounts": [
-                                {"volume_id": "vol_pgdata", "mountpoint": "/var/lib/postgresql/data"},
+                                {
+                                    "volume_id": "vol_pgdata",
+                                    "mountpoint": "/var/lib/postgresql/data",
+                                },
                             ],
                         },
                         {
@@ -216,9 +227,7 @@ class GetStackResponse(BaseModel):
 
 class UpdateStackRequest(BaseModel):
     model_config = ConfigDict(
-        json_schema_extra={
-            "examples": [{"description": "Updated description"}]
-        }
+        json_schema_extra={"examples": [{"description": "Updated description"}]}
     )
 
     description: str | None = Field(default=None, examples=["Updated description"])

@@ -51,8 +51,6 @@ class ActionName(str, Enum):
 
 class ResourceType(str, Enum):
     DOMAIN = "domain"
-    REDIRECT = "redirect"
-    ROUTE = "route"
 
 
 class ActionRecord(BaseModel):

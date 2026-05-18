@@ -9,6 +9,7 @@ from press_api_spec.compute_service_v1.base import (
     Paginated,
     PaginationParams,
 )
+from press_api_spec.compute_service_v1.models.volume import VolumeMountStatus
 
 __all__ = [
     "ContainerStatus",
@@ -47,11 +48,7 @@ class ContainerStatus(str, Enum):
 class ContainerVolumeMount(BaseModel):
     volume_id: str = Field(examples=["vol_abc123"])
     mountpoint: str = Field(examples=["/data", "/var/lib/postgresql"])
-    status: str = Field(
-        default="attached",
-        examples=["attaching", "detaching", "modifying", "deleting", "attached"],
-        description="Current state of the volume mount",
-    )
+    status: VolumeMountStatus = VolumeMountStatus.ATTACHED
 
 
 class ContainerResources(BaseModel):
@@ -73,7 +70,9 @@ class Container(BaseModel):
                     "status": "running",
                     "command": None,
                     "env": {"NODE_ENV": "production"},
-                    "volume_mounts": [{"volume_id": "vol_abc123", "mountpoint": "/data", "status": "attached"}],
+                    "volume_mounts": [
+                        {"volume_id": "vol_abc123", "mountpoint": "/data", "status": "attached"}
+                    ],
                     "created_at_unix": 1736935200,
                     "updated_at_unix": 1736942400,
                 }
@@ -86,13 +85,21 @@ class Container(BaseModel):
     # Reference to parent stack (immutable)
     stack_id: str = Field(description="Reference to parent stack")
     # User-provided identifier, set at creation only (immutable after creation)
-    name: str = Field(examples=["web", "db"], description="User-provided identifier, set at creation only")
+    name: str = Field(
+        examples=["web", "db"], description="User-provided identifier, set at creation only"
+    )
     # Container image reference (modifiable)
-    image: str = Field(examples=["nginx:latest", "node:20-alpine"], description="Container image reference")
+    image: str = Field(
+        examples=["nginx:latest", "node:20-alpine"], description="Container image reference"
+    )
     resources: ContainerResources
     status: ContainerStatus = ContainerStatus.PENDING
     # Override entrypoint command (modifiable)
-    command: str | None = Field(default=None, examples=["npm start", "python app.py"], description="Override entrypoint command")
+    command: str | None = Field(
+        default=None,
+        examples=["npm start", "python app.py"],
+        description="Override entrypoint command",
+    )
     # Environment variables (modifiable)
     env: dict[str, str] = Field(default_factory=dict, description="Environment variables")
     volume_mounts: list[ContainerVolumeMount] = []
@@ -110,7 +117,9 @@ class CreateContainerRequest(BaseModel):
                     "resources": {"memory_max": 1.0},
                     "command": None,
                     "env": {"NODE_ENV": "production"},
-                    "volume_mounts": [{"volume_id": "vol_abc123", "mountpoint": "/data", "status": "attached"}],
+                    "volume_mounts": [
+                        {"volume_id": "vol_abc123", "mountpoint": "/data", "status": "attached"}
+                    ],
                 }
             ]
         }

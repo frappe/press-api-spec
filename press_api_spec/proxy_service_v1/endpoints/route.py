@@ -3,11 +3,6 @@ from __future__ import annotations
 from typing import TypeAlias
 
 from press_api_spec.proxy_service_v1.base import Endpoint, EndpointGroup, Method
-from press_api_spec.proxy_service_v1.models.action import (
-    GetActionResponse,
-    ListActionsQuery,
-    ListActionsResponse,
-)
 from press_api_spec.proxy_service_v1.models.route import (
     CreateRouteRequest,
     CreateRouteResponse,
@@ -26,11 +21,10 @@ __all__ = [
     "GetRoute",
     "UpdateRoute",
     "DeleteRoute",
-    "ListRouteActions",
-    "GetRouteAction",
 ]
 
 RouteGroup = EndpointGroup(prefix="/api/proxy/domains/<domain_id>/routes", tags=("Routes",))
+
 
 class CreateRoute(Endpoint):
     method = Method.POST
@@ -40,7 +34,9 @@ class CreateRoute(Endpoint):
     Body: TypeAlias = CreateRouteRequest
     Response: TypeAlias = CreateRouteResponse
 
+
 RouteGroup.add(CreateRoute)
+
 
 class ListRoutes(Endpoint):
     method = Method.GET
@@ -50,7 +46,9 @@ class ListRoutes(Endpoint):
     Response: TypeAlias = ListRoutesResponse
     Query: TypeAlias = ListRoutesQuery
 
+
 RouteGroup.add(ListRoutes)
+
 
 class GetRoute(Endpoint):
     method = Method.GET
@@ -59,7 +57,9 @@ class GetRoute(Endpoint):
     summary = "Get route details"
     Response: TypeAlias = GetRouteResponse
 
+
 RouteGroup.add(GetRoute)
+
 
 class UpdateRoute(Endpoint):
     method = Method.PATCH
@@ -69,7 +69,9 @@ class UpdateRoute(Endpoint):
     Body: TypeAlias = UpdateRouteRequest
     Response: TypeAlias = UpdateRouteResponse
 
+
 RouteGroup.add(UpdateRoute)
+
 
 class DeleteRoute(Endpoint):
     method = Method.DELETE
@@ -78,25 +80,5 @@ class DeleteRoute(Endpoint):
     summary = "Delete a route"
     Response: TypeAlias = DeleteRouteResponse
 
+
 RouteGroup.add(DeleteRoute)
-
-
-class ListRouteActions(Endpoint):
-    method = Method.GET
-    path = "/actions"
-    name = "list_route_actions"
-    summary = "List all action records for routes in a domain"
-    Response: TypeAlias = ListActionsResponse
-    Query: TypeAlias = ListActionsQuery
-
-RouteGroup.add(ListRouteActions)
-
-
-class GetRouteAction(Endpoint):
-    method = Method.GET
-    path = "/actions/<action_id>"
-    name = "get_route_action"
-    summary = "Fetch a route action record by id"
-    Response: TypeAlias = GetActionResponse
-
-RouteGroup.add(GetRouteAction)
