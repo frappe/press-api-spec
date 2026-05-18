@@ -31,7 +31,7 @@ __all__ = [
 ]
 
 
-StackGroup = EndpointGroup(prefix="/stacks", tags=("Stacks",))
+StackGroup = EndpointGroup(prefix="/api/stacks", tags=("Stacks",))
 
 class CreateStack(Endpoint):
     method = Method.POST

@@ -36,7 +36,7 @@ __all__ = [
 ]
 
 
-VolumeGroup = EndpointGroup(prefix="/volumes", tags=("Volumes",))
+VolumeGroup = EndpointGroup(prefix="/api/volumes", tags=("Volumes",))
 
 class CreateVolume(Endpoint):
     method = Method.POST

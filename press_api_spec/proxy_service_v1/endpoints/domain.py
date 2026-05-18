@@ -26,7 +26,7 @@ __all__ = [
     "DeleteDomain",
 ]
 
-DomainGroup = EndpointGroup(prefix="/proxy/domains", tags=("Domains",))
+DomainGroup = EndpointGroup(prefix="/api/proxy/domains", tags=("Domains",))
 
 class RegisterDomain(Endpoint):
     method = Method.POST

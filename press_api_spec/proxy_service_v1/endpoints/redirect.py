@@ -22,7 +22,7 @@ __all__ = [
     "DeleteRedirect",
 ]
 
-RedirectGroup = EndpointGroup(prefix="/proxy/domains/<domain_id>/redirects", tags=("Redirects",))
+RedirectGroup = EndpointGroup(prefix="/api/proxy/domains/<domain_id>/redirects", tags=("Redirects",))
 
 class CreateRedirect(Endpoint):
     method = Method.POST

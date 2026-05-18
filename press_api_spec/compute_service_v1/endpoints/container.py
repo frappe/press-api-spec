@@ -32,7 +32,7 @@ __all__ = [
 
 
 ContainerGroup = EndpointGroup(
-    prefix="/stacks/<stack_id>/containers",
+    prefix="/api/stacks/<stack_id>/containers",
     tags=("Containers",),
 )
 

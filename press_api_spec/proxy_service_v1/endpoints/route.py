@@ -23,7 +23,7 @@ __all__ = [
     "DeleteRoute",
 ]
 
-RouteGroup = EndpointGroup(prefix="/proxy/domains/<domain_id>/routes", tags=("Routes",))
+RouteGroup = EndpointGroup(prefix="/api/proxy/domains/<domain_id>/routes", tags=("Routes",))
 
 class CreateRoute(Endpoint):
     method = Method.POST

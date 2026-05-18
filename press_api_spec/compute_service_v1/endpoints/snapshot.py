@@ -18,7 +18,7 @@ __all__ = [
 ]
 
 
-SnapshotGroup = EndpointGroup(prefix="/snapshots", tags=("Snapshots",))
+SnapshotGroup = EndpointGroup(prefix="/api/snapshots", tags=("Snapshots",))
 
 class ListSnapshots(Endpoint):
     method = Method.GET

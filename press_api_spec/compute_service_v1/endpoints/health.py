@@ -8,7 +8,7 @@ from press_api_spec.compute_service_v1.models.health import HealthResponse
 __all__ = ["HealthGroup", "GetHealth"]
 
 
-HealthGroup = EndpointGroup(prefix="", tags=("Health",))
+HealthGroup = EndpointGroup(prefix="/api", tags=("Health",))
 
 class GetHealth(Endpoint):
     method = Method.GET

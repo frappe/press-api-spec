@@ -15,7 +15,7 @@ __all__ = [
     "GetAction",
 ]
 
-ActionGroup = EndpointGroup(prefix="/actions", tags=("Actions",))
+ActionGroup = EndpointGroup(prefix="/api/actions", tags=("Actions",))
 
 class ListActions(Endpoint):
     method = Method.GET
