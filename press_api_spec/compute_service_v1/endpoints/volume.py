@@ -3,6 +3,11 @@ from __future__ import annotations
 from typing import TypeAlias
 
 from press_api_spec.compute_service_v1.base import Endpoint, EndpointGroup, Method
+from press_api_spec.compute_service_v1.models.action import (
+    GetActionResponse,
+    ListActionsQuery,
+    ListActionsResponse,
+)
 from press_api_spec.compute_service_v1.models.volume import (
     AttachVolumeRequest,
     AttachVolumeResponse,
@@ -33,6 +38,8 @@ __all__ = [
     "DetachVolume",
     "ResizeVolume",
     "SnapshotVolume",
+    "ListVolumeActions",
+    "GetVolumeAction",
 ]
 
 
@@ -125,3 +132,24 @@ class SnapshotVolume(Endpoint):
     Response: TypeAlias = SnapshotVolumeResponse
 
 VolumeGroup.add(SnapshotVolume)
+
+
+class ListVolumeActions(Endpoint):
+    method = Method.GET
+    path = "/actions"
+    name = "list_volume_actions"
+    summary = "List all action records for volumes"
+    Response: TypeAlias = ListActionsResponse
+    Query: TypeAlias = ListActionsQuery
+
+VolumeGroup.add(ListVolumeActions)
+
+
+class GetVolumeAction(Endpoint):
+    method = Method.GET
+    path = "/actions/<action_id>"
+    name = "get_volume_action"
+    summary = "Fetch a volume action record by id"
+    Response: TypeAlias = GetActionResponse
+
+VolumeGroup.add(GetVolumeAction)

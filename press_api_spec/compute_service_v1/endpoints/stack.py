@@ -3,6 +3,11 @@ from __future__ import annotations
 from typing import TypeAlias
 
 from press_api_spec.compute_service_v1.base import Endpoint, EndpointGroup, Method
+from press_api_spec.compute_service_v1.models.action import (
+    GetActionResponse,
+    ListActionsQuery,
+    ListActionsResponse,
+)
 from press_api_spec.compute_service_v1.models.stack import (
     CreateStackRequest,
     CreateStackResponse,
@@ -28,6 +33,8 @@ __all__ = [
     "StartStack",
     "StopStack",
     "RestartStack",
+    "ListStackActions",
+    "GetStackAction",
 ]
 
 
@@ -117,3 +124,24 @@ class RestartStack(Endpoint):
     Response: TypeAlias = StackActionResponse
 
 StackGroup.add(RestartStack)
+
+
+class ListStackActions(Endpoint):
+    method = Method.GET
+    path = "/actions"
+    name = "list_stack_actions"
+    summary = "List all action records for stacks"
+    Response: TypeAlias = ListActionsResponse
+    Query: TypeAlias = ListActionsQuery
+
+StackGroup.add(ListStackActions)
+
+
+class GetStackAction(Endpoint):
+    method = Method.GET
+    path = "/actions/<action_id>"
+    name = "get_stack_action"
+    summary = "Fetch a stack action record by id"
+    Response: TypeAlias = GetActionResponse
+
+StackGroup.add(GetStackAction)

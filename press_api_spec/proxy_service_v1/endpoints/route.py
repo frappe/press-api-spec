@@ -3,6 +3,11 @@ from __future__ import annotations
 from typing import TypeAlias
 
 from press_api_spec.proxy_service_v1.base import Endpoint, EndpointGroup, Method
+from press_api_spec.proxy_service_v1.models.action import (
+    GetActionResponse,
+    ListActionsQuery,
+    ListActionsResponse,
+)
 from press_api_spec.proxy_service_v1.models.route import (
     CreateRouteRequest,
     CreateRouteResponse,
@@ -21,6 +26,8 @@ __all__ = [
     "GetRoute",
     "UpdateRoute",
     "DeleteRoute",
+    "ListRouteActions",
+    "GetRouteAction",
 ]
 
 RouteGroup = EndpointGroup(prefix="/api/proxy/domains/<domain_id>/routes", tags=("Routes",))
@@ -72,3 +79,24 @@ class DeleteRoute(Endpoint):
     Response: TypeAlias = DeleteRouteResponse
 
 RouteGroup.add(DeleteRoute)
+
+
+class ListRouteActions(Endpoint):
+    method = Method.GET
+    path = "/actions"
+    name = "list_route_actions"
+    summary = "List all action records for routes in a domain"
+    Response: TypeAlias = ListActionsResponse
+    Query: TypeAlias = ListActionsQuery
+
+RouteGroup.add(ListRouteActions)
+
+
+class GetRouteAction(Endpoint):
+    method = Method.GET
+    path = "/actions/<action_id>"
+    name = "get_route_action"
+    summary = "Fetch a route action record by id"
+    Response: TypeAlias = GetActionResponse
+
+RouteGroup.add(GetRouteAction)

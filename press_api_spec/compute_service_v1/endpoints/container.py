@@ -3,6 +3,11 @@ from __future__ import annotations
 from typing import TypeAlias
 
 from press_api_spec.compute_service_v1.base import Endpoint, EndpointGroup, Method
+from press_api_spec.compute_service_v1.models.action import (
+    GetActionResponse,
+    ListActionsQuery,
+    ListActionsResponse,
+)
 from press_api_spec.compute_service_v1.models.container import (
     ContainerActionResponse,
     CreateContainerRequest,
@@ -28,6 +33,8 @@ __all__ = [
     "StartContainer",
     "StopContainer",
     "RestartContainer",
+    "ListContainerActions",
+    "GetContainerAction",
 ]
 
 
@@ -120,3 +127,24 @@ class RestartContainer(Endpoint):
     Response: TypeAlias = ContainerActionResponse
 
 ContainerGroup.add(RestartContainer)
+
+
+class ListContainerActions(Endpoint):
+    method = Method.GET
+    path = "/actions"
+    name = "list_container_actions"
+    summary = "List all action records for containers in a stack"
+    Response: TypeAlias = ListActionsResponse
+    Query: TypeAlias = ListActionsQuery
+
+ContainerGroup.add(ListContainerActions)
+
+
+class GetContainerAction(Endpoint):
+    method = Method.GET
+    path = "/actions/<action_id>"
+    name = "get_container_action"
+    summary = "Fetch a container action record by id"
+    Response: TypeAlias = GetActionResponse
+
+ContainerGroup.add(GetContainerAction)

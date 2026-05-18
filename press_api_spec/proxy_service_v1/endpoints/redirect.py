@@ -3,6 +3,11 @@ from __future__ import annotations
 from typing import TypeAlias
 
 from press_api_spec.proxy_service_v1.base import Endpoint, EndpointGroup, Method
+from press_api_spec.proxy_service_v1.models.action import (
+    GetActionResponse,
+    ListActionsQuery,
+    ListActionsResponse,
+)
 from press_api_spec.proxy_service_v1.models.redirect import (
     CreateRedirectRequest,
     CreateRedirectResponse,
@@ -20,6 +25,8 @@ __all__ = [
     "GetRedirect",
     "UpdateRedirect",
     "DeleteRedirect",
+    "ListRedirectActions",
+    "GetRedirectAction",
 ]
 
 RedirectGroup = EndpointGroup(prefix="/api/proxy/domains/<domain_id>/redirects", tags=("Redirects",))
@@ -71,3 +78,24 @@ class DeleteRedirect(Endpoint):
     Response: TypeAlias = DeleteRedirectResponse
 
 RedirectGroup.add(DeleteRedirect)
+
+
+class ListRedirectActions(Endpoint):
+    method = Method.GET
+    path = "/actions"
+    name = "list_redirect_actions"
+    summary = "List all action records for redirects in a domain"
+    Response: TypeAlias = ListActionsResponse
+    Query: TypeAlias = ListActionsQuery
+
+RedirectGroup.add(ListRedirectActions)
+
+
+class GetRedirectAction(Endpoint):
+    method = Method.GET
+    path = "/actions/<action_id>"
+    name = "get_redirect_action"
+    summary = "Fetch a redirect action record by id"
+    Response: TypeAlias = GetActionResponse
+
+RedirectGroup.add(GetRedirectAction)

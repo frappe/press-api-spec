@@ -3,6 +3,11 @@ from __future__ import annotations
 from typing import TypeAlias
 
 from press_api_spec.proxy_service_v1.base import Endpoint, EndpointGroup, Method
+from press_api_spec.proxy_service_v1.models.action import (
+    GetActionResponse,
+    ListActionsQuery,
+    ListActionsResponse,
+)
 from press_api_spec.proxy_service_v1.models.domain import (
     DeleteDomainResponse,
     GetCertificateChainResponse,
@@ -24,6 +29,8 @@ __all__ = [
     "GetCertificateChain",
     "RenewCertificate",
     "DeleteDomain",
+    "ListDomainActions",
+    "GetDomainAction",
 ]
 
 DomainGroup = EndpointGroup(prefix="/api/proxy/domains", tags=("Domains",))
@@ -92,3 +99,24 @@ class DeleteDomain(Endpoint):
     Response: TypeAlias = DeleteDomainResponse
 
 DomainGroup.add(DeleteDomain)
+
+
+class ListDomainActions(Endpoint):
+    method = Method.GET
+    path = "/actions"
+    name = "list_domain_actions"
+    summary = "List all action records for domains"
+    Response: TypeAlias = ListActionsResponse
+    Query: TypeAlias = ListActionsQuery
+
+DomainGroup.add(ListDomainActions)
+
+
+class GetDomainAction(Endpoint):
+    method = Method.GET
+    path = "/actions/<action_id>"
+    name = "get_domain_action"
+    summary = "Fetch a domain action record by id"
+    Response: TypeAlias = GetActionResponse
+
+DomainGroup.add(GetDomainAction)
