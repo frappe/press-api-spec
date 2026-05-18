@@ -61,6 +61,7 @@ class Container(BaseModel):
                 {
                     "id": "ctr_def456",
                     "stack_id": "stack_abc123",
+                    "name": "web",
                     "image": "nginx:latest",
                     "resources": {"memory_max": 1.0},
                     "status": "running",
@@ -74,13 +75,20 @@ class Container(BaseModel):
         }
     )
 
-    id: str
-    stack_id: str
-    image: str = Field(examples=["nginx:latest", "node:20-alpine"])
+    # Server-generated unique identifier (immutable)
+    id: str = Field(description="Server-generated unique identifier")
+    # Reference to parent stack (immutable)
+    stack_id: str = Field(description="Reference to parent stack")
+    # User-provided identifier, set at creation only (immutable after creation)
+    name: str = Field(examples=["web", "db"], description="User-provided identifier, set at creation only")
+    # Container image reference (modifiable)
+    image: str = Field(examples=["nginx:latest", "node:20-alpine"], description="Container image reference")
     resources: ContainerResources
     status: ContainerStatus = ContainerStatus.PENDING
-    command: str | None = Field(default=None, examples=["npm start", "python app.py"])
-    env: dict[str, str] = {}
+    # Override entrypoint command (modifiable)
+    command: str | None = Field(default=None, examples=["npm start", "python app.py"], description="Override entrypoint command")
+    # Environment variables (modifiable)
+    env: dict[str, str] = Field(default_factory=dict, description="Environment variables")
     volume_mounts: list[ContainerVolumeMount] = []
     created_at_unix: int
     updated_at_unix: int
@@ -92,6 +100,7 @@ class CreateContainerRequest(BaseModel):
             "examples": [
                 {
                     "image": "nginx:latest",
+                    "name": "web",
                     "resources": {"memory_max": 1.0},
                     "command": None,
                     "env": {"NODE_ENV": "production"},
@@ -102,6 +111,7 @@ class CreateContainerRequest(BaseModel):
     )
 
     image: str = Field(examples=["nginx:latest", "node:20-alpine"])
+    name: str = Field(examples=["web", "db"])
     resources: ContainerResources = ContainerResources()
     command: str | None = Field(default=None, examples=["npm start", "python app.py"])
     env: dict[str, str] = {}

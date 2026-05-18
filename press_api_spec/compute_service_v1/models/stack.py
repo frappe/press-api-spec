@@ -85,9 +85,12 @@ class Stack(BaseModel):
         }
     )
 
-    id: str
-    name: str = Field(examples=["my-app", "production-api"])
-    description: str | None = Field(default=None, examples=["Production API stack"])
+    # Server-generated unique identifier (immutable)
+    id: str = Field(description="Server-generated unique identifier")
+    # User-provided identifier, set at creation only (immutable after creation)
+    name: str = Field(examples=["my-app", "production-api"], description="User-provided identifier, set at creation only")
+    # Arbitrary user-provided description (modifiable)
+    description: str | None = Field(default=None, examples=["Production API stack"], description="Arbitrary user-provided description")
     status: StackStatus = StackStatus.PENDING
     runtime: Runtime = Runtime.CONTAINER
     networking: NetworkingMode = NetworkingMode.ISOLATED
@@ -137,11 +140,10 @@ class GetStackResponse(BaseModel):
 class UpdateStackRequest(BaseModel):
     model_config = ConfigDict(
         json_schema_extra={
-            "examples": [{"name": "renamed-app", "description": "Updated description"}]
+            "examples": [{"description": "Updated description"}]
         }
     )
 
-    name: str | None = Field(default=None, examples=["renamed-app"])
     description: str | None = Field(default=None, examples=["Updated description"])
 
 
