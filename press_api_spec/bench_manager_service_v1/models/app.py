@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from press_api_spec.compute_service_v1.base import EmptyResponse
@@ -85,7 +87,7 @@ class AppWebhookRequest(BaseModel):
     repository: str = Field(examples=["erpnext"])
     branch: str = Field(examples=["version-15", "main", "develop"])
     event: str = Field(examples=["push", "pull_request"])
-    data: dict = Field(description="Event payload data.", examples=[{"key": "value"}])
+    data: dict[str, Any] = Field(description="Event payload data.", examples=[{"key": "value"}])
     team: str = Field(examples=["developers"])
     is_public: str = Field(
         description="Used for marketplace apps",

@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, ClassVar, Generic, Iterator, TypeVar
+from typing import Any, ClassVar, Generic, Iterator, TypeVar, cast
 
 from pydantic import BaseModel
 
@@ -109,12 +109,16 @@ class EndpointMeta(type):
             attrs["Response"] = response
         if query is not None:
             attrs["Query"] = query
-        return EndpointMeta(name or "Endpoint", (cls,), attrs)
+        return cast("type[Endpoint]", EndpointMeta(name or "Endpoint", (cls,), attrs))
 
     def __repr__(cls) -> str:
         if cls is Endpoint:
             return "<class 'Endpoint'>"
-        return f"<Endpoint {cls.method.value} {cls.path}>"
+        method = getattr(cls, "method", None)
+        path = getattr(cls, "path", "")
+        if method is None:
+            return f"<Endpoint {path}>"
+        return f"<Endpoint {method.value} {path}>"
 
     def __class_getitem__(cls, item: Any) -> type:
         return cls
@@ -189,9 +193,6 @@ class EndpointGroup:
 
     def __iter__(self) -> Iterator[type[Endpoint]]:
         return iter(self.endpoints)
-
-    def __len__(self) -> int:
-        return len(self.endpoints)
 
     def __len__(self) -> int:
         return len(self.endpoints)

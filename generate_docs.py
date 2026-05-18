@@ -349,7 +349,7 @@ def _html(specs: list[tuple[ServiceSpec, dict[str, Any]]]) -> str:
       border: 1px solid #d8dde7;
       border-radius: 6px;
       box-shadow: 0 4px 16px rgba(0,0,0,.12);
-      min-width: 180px;
+      min-width: 200px;
       z-index: 9999;
       overflow: hidden;
     }}

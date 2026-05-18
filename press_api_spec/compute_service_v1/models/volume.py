@@ -12,6 +12,7 @@ from press_api_spec.compute_service_v1.base import (
 
 __all__ = [
     "VolumeStatus",
+    "VolumeMountStatus",
     "SnapshotStatus",
     "VolumeMount",
     "Volume",
@@ -43,9 +44,17 @@ class VolumeStatus(str, Enum):
     CREATING = "creating"
     AVAILABLE = "available"
     IN_USE = "in-use"
-    RESIZING = "resizing"
     DELETING = "deleting"
+    DELETED = "deleted"
     ERROR = "error"
+
+
+class VolumeMountStatus(str, Enum):
+    ATTACHING = "attaching"
+    DETACHING = "detaching"
+    MODIFYING = "modifying"
+    DELETING = "deleting"
+    ATTACHED = "attached"
 
 
 class SnapshotStatus(str, Enum):
@@ -60,6 +69,7 @@ class VolumeMount(BaseModel):
     stack_id: str
     container_id: str
     mountpoint: str = Field(examples=["/data", "/var/lib/postgresql"])
+    status: VolumeMountStatus = VolumeMountStatus.ATTACHED
 
 
 class Volume(BaseModel):
@@ -78,11 +88,23 @@ class Volume(BaseModel):
                             "stack_id": "stack_abc123",
                             "container_id": "ctr_def456",
                             "mountpoint": "/var/lib/postgresql",
+                            "status": "attached",
                         }
                     ],
                     "created_at_unix": 1736935200,
                     "updated_at_unix": 1736942400,
-                }
+                },
+                {
+                    "id": "vol_def456",
+                    "description": "Redis cache",
+                    "size": 20,
+                    "iops": 3000,
+                    "throughput": 125,
+                    "status": "available",
+                    "mounts": [],
+                    "created_at_unix": 1736949600,
+                    "updated_at_unix": 1736956800,
+                },
             ]
         }
     )

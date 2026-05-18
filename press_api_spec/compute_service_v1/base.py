@@ -45,10 +45,12 @@ class ActionStatus(str, Enum):
 
 
 class ActionName(str, Enum):
+    UPDATE_STACK = "update_stack"
     RESIZE_STACK = "resize_stack"
     START_STACK = "start_stack"
     STOP_STACK = "stop_stack"
     RESTART_STACK = "restart_stack"
+    UPDATE_CONTAINER = "update_container"
     RESIZE_CONTAINER = "resize_container"
     START_CONTAINER = "start_container"
     STOP_CONTAINER = "stop_container"

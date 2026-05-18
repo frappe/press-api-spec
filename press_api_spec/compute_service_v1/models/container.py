@@ -33,6 +33,7 @@ class ContainerStatus(str, Enum):
     PENDING = "pending"
     CREATING = "creating"
     RUNNING = "running"
+    UPDATING = "updating"
     STOPPING = "stopping"
     STOPPED = "stopped"
     STARTING = "starting"
@@ -46,6 +47,11 @@ class ContainerStatus(str, Enum):
 class ContainerVolumeMount(BaseModel):
     volume_id: str = Field(examples=["vol_abc123"])
     mountpoint: str = Field(examples=["/data", "/var/lib/postgresql"])
+    status: str = Field(
+        default="attached",
+        examples=["attaching", "detaching", "modifying", "deleting", "attached"],
+        description="Current state of the volume mount",
+    )
 
 
 class ContainerResources(BaseModel):
@@ -67,7 +73,7 @@ class Container(BaseModel):
                     "status": "running",
                     "command": None,
                     "env": {"NODE_ENV": "production"},
-                    "volume_mounts": [{"volume_id": "vol_abc123", "mountpoint": "/data"}],
+                    "volume_mounts": [{"volume_id": "vol_abc123", "mountpoint": "/data", "status": "attached"}],
                     "created_at_unix": 1736935200,
                     "updated_at_unix": 1736942400,
                 }
@@ -104,7 +110,7 @@ class CreateContainerRequest(BaseModel):
                     "resources": {"memory_max": 1.0},
                     "command": None,
                     "env": {"NODE_ENV": "production"},
-                    "volume_mounts": [{"volume_id": "vol_abc123", "mountpoint": "/data"}],
+                    "volume_mounts": [{"volume_id": "vol_abc123", "mountpoint": "/data", "status": "attached"}],
                 }
             ]
         }
