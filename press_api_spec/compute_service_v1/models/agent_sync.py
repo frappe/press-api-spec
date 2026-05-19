@@ -24,13 +24,32 @@ applied_version (on each Agent*StatusReport)
     The control plane compares `spec.version` vs `report.applied_version` per
     object to determine reconciliation state.
 
+Status reporting
+================
+
+reason (on each Agent*StatusReport)
+    Short machine-readable explanation of why the resource is in its current state.
+    Examples: "waiting for dependency", "image pull failed", "address conflict".
+    Use this for programmatic decision-making (e.g. retry vs escalate).
+
+message (on each Agent*StatusReport)
+    Human-readable free-text description of the current state or progress.
+    Suitable for display in a UI or log.
+
+blocked_on (on each Agent*StatusReport)
+    Structured list of dependencies that are preventing forward progress.
+    Each entry specifies the resource type, resource ID, and the condition
+    being waited for.  Enables the control plane to build a dependency graph,
+    detect deadlocks, and surface clear status without parsing free text.
+
 Example flow:
     1. Control plane sends spec revision=42 (network v1, stack v3, volume v2).
     2. Agent polls, sees revision 42 != last_seen 41, starts reconcile.
     3. Agent applies network v1 and stack v3 but volume v2 is still provisioning.
     4. Agent reports: spec_revision=42, networks=[applied_version=1],
-       stacks=[applied_version=3], volumes=[applied_version=1] (still on old).
-    5. Control plane sees volume v2 is pending, knows not to mark it as applied.
+       stacks=[applied_version=3, blocked_on=[{volume, vol_pgdata, ready}]],
+       volumes=[applied_version=1, reason="provisioning"].
+    5. Control plane sees volume v2 is pending and stack is blocked on it.
 """
 
 from __future__ import annotations
@@ -60,6 +79,7 @@ __all__ = [
     "AgentDesiredStackSpec",
     "AgentNodeSpec",
     "GetAgentNodeSpecResponse",
+    "Dependency",
     "AgentNetworkStatusReport",
     "AgentVolumeStatusReport",
     "AgentContainerStatusReport",
@@ -524,6 +544,38 @@ class GetAgentNodeSpecResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+class Dependency(BaseModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "resource_type": "volume",
+                    "resource_id": "vol_pgdata",
+                    "condition": "ready",
+                },
+                {
+                    "resource_type": "container",
+                    "resource_id": "ctr_redis",
+                    "condition": "running",
+                },
+            ]
+        }
+    )
+
+    resource_type: str = Field(
+        description="Type of resource being waited on",
+        examples=["volume", "network", "container"],
+    )
+    resource_id: str = Field(
+        description="ID of the resource being waited on",
+        examples=["vol_pgdata", "net_abc123", "ctr_redis"],
+    )
+    condition: str = Field(
+        description="What condition the resource must satisfy",
+        examples=["ready", "attached", "running"],
+    )
+
+
 class AgentNetworkStatusReport(BaseModel):
     model_config = ConfigDict(
         json_schema_extra={
@@ -534,6 +586,8 @@ class AgentNetworkStatusReport(BaseModel):
                     "message": None,
                     "last_error": None,
                     "applied_version": 1,
+                    "reason": None,
+                    "blocked_on": [],
                 },
                 {
                     "network_id": "net_def456",
@@ -541,6 +595,8 @@ class AgentNetworkStatusReport(BaseModel):
                     "message": "Failed to create overlay network",
                     "last_error": "address space already in use",
                     "applied_version": 3,
+                    "reason": "address conflict",
+                    "blocked_on": [],
                 },
             ]
         }
@@ -557,6 +613,11 @@ class AgentNetworkStatusReport(BaseModel):
         description="Version of the network spec that was applied",
         examples=[1, 3],
     )
+    reason: str | None = Field(
+        default=None,
+        description="Why the resource is in this state, e.g. 'address conflict', 'waiting for upstream'",
+    )
+    blocked_on: list[Dependency] = []
 
 
 class AgentVolumeStatusReport(BaseModel):
@@ -572,6 +633,8 @@ class AgentVolumeStatusReport(BaseModel):
                     "message": None,
                     "last_error": None,
                     "applied_version": 1,
+                    "reason": None,
+                    "blocked_on": [],
                 },
                 {
                     "volume_id": "vol_logs",
@@ -582,6 +645,8 @@ class AgentVolumeStatusReport(BaseModel):
                     "message": "Volume mount failed",
                     "last_error": "device not found",
                     "applied_version": 2,
+                    "reason": "device missing",
+                    "blocked_on": [],
                 },
             ]
         }
@@ -600,6 +665,11 @@ class AgentVolumeStatusReport(BaseModel):
         description="Version of the volume spec that was applied",
         examples=[1, 2],
     )
+    reason: str | None = Field(
+        default=None,
+        description="Why the resource is in this state, e.g. 'provisioning', 'device missing'",
+    )
+    blocked_on: list[Dependency] = []
 
 
 class AgentContainerStatusReport(BaseModel):
@@ -613,14 +683,34 @@ class AgentContainerStatusReport(BaseModel):
                     "message": None,
                     "last_error": None,
                     "applied_version": 1,
+                    "reason": None,
+                    "blocked_on": [],
                 },
                 {
                     "container_id": "ctr_d4e5f6",
+                    "observed_status": "pending",
+                    "runtime_id": None,
+                    "message": "Waiting for volume to be ready before starting container",
+                    "last_error": None,
+                    "applied_version": 4,
+                    "reason": "waiting for dependency",
+                    "blocked_on": [
+                        {
+                            "resource_type": "volume",
+                            "resource_id": "vol_pgdata",
+                            "condition": "ready",
+                        }
+                    ],
+                },
+                {
+                    "container_id": "ctr_dead",
                     "observed_status": "error",
                     "runtime_id": "sha256:789ghi012jkl",
                     "message": "Container exited with code 1",
                     "last_error": "FATAL: too many connections for role 'app'",
                     "applied_version": 5,
+                    "reason": "application crash",
+                    "blocked_on": [],
                 },
             ]
         }
@@ -638,6 +728,11 @@ class AgentContainerStatusReport(BaseModel):
         description="Version of the container spec that was applied",
         examples=[1, 5],
     )
+    reason: str | None = Field(
+        default=None,
+        description="Why the container is in this state, e.g. 'waiting for dependency', 'image pull failed'",
+    )
+    blocked_on: list[Dependency] = []
 
 
 class AgentStackStatusReport(BaseModel):
@@ -657,6 +752,8 @@ class AgentStackStatusReport(BaseModel):
                             "message": None,
                             "last_error": None,
                             "applied_version": 1,
+                            "reason": None,
+                            "blocked_on": [],
                         },
                         {
                             "container_id": "ctr_d4e5f6",
@@ -665,9 +762,13 @@ class AgentStackStatusReport(BaseModel):
                             "message": None,
                             "last_error": None,
                             "applied_version": 3,
+                            "reason": None,
+                            "blocked_on": [],
                         },
                     ],
                     "applied_version": 1,
+                    "reason": None,
+                    "blocked_on": [],
                 },
                 {
                     "stack_id": "stack_def456",
@@ -682,9 +783,13 @@ class AgentStackStatusReport(BaseModel):
                             "message": "Container failed to start",
                             "last_error": "Error: connect ECONNREFUSED 127.0.0.1:6379",
                             "applied_version": 2,
+                            "reason": "dependency unavailable",
+                            "blocked_on": [],
                         },
                     ],
                     "applied_version": 4,
+                    "reason": "container failure",
+                    "blocked_on": [],
                 },
             ]
         }
@@ -699,6 +804,11 @@ class AgentStackStatusReport(BaseModel):
         description="Version of the stack spec that was applied",
         examples=[1, 4],
     )
+    reason: str | None = Field(
+        default=None,
+        description="Why the stack is in this state, e.g. 'container failure', 'network not ready'",
+    )
+    blocked_on: list[Dependency] = []
 
 
 class AgentResourceMetrics(BaseModel):
@@ -737,6 +847,8 @@ class ReportAgentNodeStatusRequest(BaseModel):
                             "message": None,
                             "last_error": None,
                             "applied_version": 1,
+                            "reason": None,
+                            "blocked_on": [],
                         }
                     ],
                     "volumes": [
@@ -749,6 +861,8 @@ class ReportAgentNodeStatusRequest(BaseModel):
                             "message": None,
                             "last_error": None,
                             "applied_version": 1,
+                            "reason": None,
+                            "blocked_on": [],
                         },
                         {
                             "volume_id": "vol_logs",
@@ -759,6 +873,8 @@ class ReportAgentNodeStatusRequest(BaseModel):
                             "message": None,
                             "last_error": None,
                             "applied_version": 2,
+                            "reason": None,
+                            "blocked_on": [],
                         },
                     ],
                     "stacks": [
@@ -775,6 +891,8 @@ class ReportAgentNodeStatusRequest(BaseModel):
                                     "message": None,
                                     "last_error": None,
                                     "applied_version": 1,
+                                    "reason": None,
+                                    "blocked_on": [],
                                 },
                                 {
                                     "container_id": "ctr_d4e5f6",
@@ -783,26 +901,46 @@ class ReportAgentNodeStatusRequest(BaseModel):
                                     "message": None,
                                     "last_error": None,
                                     "applied_version": 3,
+                                    "reason": None,
+                                    "blocked_on": [],
                                 },
                             ],
                             "applied_version": 1,
+                            "reason": None,
+                            "blocked_on": [],
                         },
                         {
                             "stack_id": "stack_def456",
-                            "observed_status": "error",
-                            "message": "Worker container crashed",
-                            "last_error": "Error: connect ECONNREFUSED 127.0.0.1:6379",
+                            "observed_status": "pending",
+                            "message": "Waiting for volume vol_pgdata to be ready",
+                            "last_error": None,
                             "containers": [
                                 {
                                     "container_id": "ctr_g7h8i9",
-                                    "observed_status": "error",
+                                    "observed_status": "pending",
                                     "runtime_id": None,
-                                    "message": "Container failed to start",
-                                    "last_error": "Error: connect ECONNREFUSED 127.0.0.1:6379",
+                                    "message": "Waiting for volume to be ready before starting container",
+                                    "last_error": None,
                                     "applied_version": 2,
+                                    "reason": "waiting for dependency",
+                                    "blocked_on": [
+                                        {
+                                            "resource_type": "volume",
+                                            "resource_id": "vol_pgdata",
+                                            "condition": "ready",
+                                        }
+                                    ],
                                 },
                             ],
                             "applied_version": 4,
+                            "reason": "dependency not ready",
+                            "blocked_on": [
+                                {
+                                    "resource_type": "volume",
+                                    "resource_id": "vol_pgdata",
+                                    "condition": "ready",
+                                }
+                            ],
                         },
                     ],
                     "resources": {
