@@ -1,55 +1,19 @@
 """Agent sync models — reconciliation between control plane and node agents.
 
-Versioning model
-================
+Reconciliation is driven by observed state. The agent runs an idempotent reconcile
+loop every cycle; convergence is reported per-resource via `observed_status`,
+`reason`, `message`, and `blocked_on`.
 
-Two versioning fields work together to enable efficient and granular reconciliation:
-
-revision (on AgentNodeSpec)
-    Global snapshot version for the entire desired state of a node.
-    Monotonically increasing; incremented whenever any object on the node changes.
-    The agent compares this against the revision it last applied and can skip the
-    entire reconcile loop if unchanged.  When the agent posts a status report it
-    includes `spec_revision` so the control plane knows which snapshot the report
-    corresponds to.
-
-version (on each Agent*Spec)
-    Per-object version.  Incremented only when that specific object changes.
-    Lets the control plane know exactly which objects the agent has applied and
-    which are still pending, even when a single spec revision touches multiple
-    objects.
-
-applied_version (on each Agent*StatusReport)
-    The version of the spec object that the agent has successfully applied.
-    The control plane compares `spec.version` vs `report.applied_version` per
-    object to determine reconciliation state.
-
-Status reporting
-================
-
-reason (on each Agent*StatusReport)
+reason
     Short machine-readable explanation of why the resource is in its current state.
     Examples: "waiting for dependency", "image pull failed", "address conflict".
-    Use this for programmatic decision-making (e.g. retry vs escalate).
 
-message (on each Agent*StatusReport)
-    Human-readable free-text description of the current state or progress.
-    Suitable for display in a UI or log.
+message
+    Human-readable free-text description suitable for display in a UI or log.
 
-blocked_on (on each Agent*StatusReport)
-    Structured list of dependencies that are preventing forward progress.
-    Each entry specifies the resource type, resource ID, and the condition
-    being waited for.  Enables the control plane to build a dependency graph,
-    detect deadlocks, and surface clear status without parsing free text.
-
-Example flow:
-    1. Control plane sends spec revision=42 (network v1, stack v3, volume v2).
-    2. Agent polls, sees revision 42 != last_seen 41, starts reconcile.
-    3. Agent applies network v1 and stack v3 but volume v2 is still provisioning.
-    4. Agent reports: spec_revision=42, networks=[applied_version=1],
-       stacks=[applied_version=3, blocked_on=[{volume, vol_pgdata, ready}]],
-       volumes=[applied_version=1, reason="provisioning"].
-    5. Control plane sees volume v2 is pending and stack is blocked on it.
+blocked_on
+    Structured list of dependencies preventing forward progress. Each entry
+    specifies the resource type, resource ID, and the condition being waited for.
 """
 
 from __future__ import annotations
@@ -111,14 +75,12 @@ class AgentNetworkSpec(BaseModel):
                     "name": "production-overlay",
                     "cidr": "10.0.0.0/16",
                     "gateway_ip": "10.0.0.1",
-                    "version": 1,
                 },
                 {
                     "id": "net_def456",
                     "name": "staging-overlay",
                     "cidr": "10.1.0.0/16",
                     "gateway_ip": "10.1.0.1",
-                    "version": 3,
                 },
             ]
         }
@@ -128,10 +90,6 @@ class AgentNetworkSpec(BaseModel):
     name: str = Field(examples=["production-overlay", "staging-overlay"])
     cidr: str = Field(examples=["10.0.0.0/16", "10.1.0.0/16"])
     gateway_ip: str = Field(examples=["10.0.0.1", "10.1.0.1"])
-    version: int = Field(
-        description="Monotonically increasing version; incremented on each change",
-        examples=[1, 3],
-    )
 
 
 class AgentVolumeSpec(BaseModel):
@@ -144,7 +102,6 @@ class AgentVolumeSpec(BaseModel):
                     "size_gb": 50.0,
                     "mountpoint": "/var/lib/postgresql/data",
                     "status": "in-use",
-                    "version": 1,
                 },
                 {
                     "id": "vol_logs",
@@ -152,7 +109,6 @@ class AgentVolumeSpec(BaseModel):
                     "size_gb": 10.0,
                     "mountpoint": "/var/log/app",
                     "status": "available",
-                    "version": 2,
                 },
             ]
         }
@@ -165,10 +121,6 @@ class AgentVolumeSpec(BaseModel):
     status: VolumeStatus = Field(
         default=VolumeStatus.AVAILABLE,
         description="Desired state of the volume",
-    )
-    version: int = Field(
-        description="Monotonically increasing version; incremented on each change",
-        examples=[1, 2],
     )
 
 
@@ -190,7 +142,6 @@ class AgentDesiredContainerSpec(BaseModel):
                             "status": "attached",
                         }
                     ],
-                    "version": 1,
                 },
                 {
                     "id": "ctr_d4e5f6",
@@ -206,7 +157,6 @@ class AgentDesiredContainerSpec(BaseModel):
                             "status": "attached",
                         }
                     ],
-                    "version": 5,
                 },
             ]
         }
@@ -221,10 +171,6 @@ class AgentDesiredContainerSpec(BaseModel):
     env: dict[str, str] = Field(default_factory=dict)
     resources: ContainerResources = ContainerResources()
     volume_mounts: list[ContainerVolumeMount] = []
-    version: int = Field(
-        description="Monotonically increasing version; incremented on each change",
-        examples=[1, 5],
-    )
 
 
 class AgentDesiredStackSpec(BaseModel):
@@ -258,7 +204,6 @@ class AgentDesiredStackSpec(BaseModel):
                                     "status": "attached",
                                 }
                             ],
-                            "version": 1,
                         },
                         {
                             "id": "ctr_d4e5f6",
@@ -273,10 +218,8 @@ class AgentDesiredStackSpec(BaseModel):
                                     "status": "attached",
                                 }
                             ],
-                            "version": 3,
                         },
                     ],
-                    "version": 1,
                 },
                 {
                     "id": "stack_def456",
@@ -299,10 +242,8 @@ class AgentDesiredStackSpec(BaseModel):
                             "env": {"REDIS_URL": "redis://cache:6379"},
                             "resources": {"memory_max": 2.0},
                             "volume_mounts": [],
-                            "version": 2,
                         },
                     ],
-                    "version": 4,
                 },
             ]
         }
@@ -319,10 +260,6 @@ class AgentDesiredStackSpec(BaseModel):
     )
     resources: StackResources = StackResources()
     containers: list[AgentDesiredContainerSpec] = []
-    version: int = Field(
-        description="Monotonically increasing version; incremented on each change",
-        examples=[1, 4],
-    )
 
 
 class AgentNodeSpec(BaseModel):
@@ -331,21 +268,12 @@ class AgentNodeSpec(BaseModel):
             "examples": [
                 {
                     "node_id": "node_us-east-1_001",
-                    "revision": 42,
                     "networks": [
                         {
                             "id": "net_abc123",
                             "name": "production-overlay",
                             "cidr": "10.0.0.0/16",
                             "gateway_ip": "10.0.0.1",
-                            "version": 1,
-                        },
-                        {
-                            "id": "net_def456",
-                            "name": "staging-overlay",
-                            "cidr": "10.1.0.0/16",
-                            "gateway_ip": "10.1.0.1",
-                            "version": 3,
                         },
                     ],
                     "volumes": [
@@ -355,15 +283,6 @@ class AgentNodeSpec(BaseModel):
                             "size_gb": 50.0,
                             "mountpoint": "/var/lib/postgresql/data",
                             "status": "in-use",
-                            "version": 1,
-                        },
-                        {
-                            "id": "vol_logs",
-                            "name": "app-logs",
-                            "size_gb": 10.0,
-                            "mountpoint": "/var/log/app",
-                            "status": "in-use",
-                            "version": 2,
                         },
                     ],
                     "stacks": [
@@ -393,51 +312,8 @@ class AgentNodeSpec(BaseModel):
                                             "status": "attached",
                                         }
                                     ],
-                                    "version": 1,
-                                },
-                                {
-                                    "id": "ctr_d4e5f6",
-                                    "name": "db",
-                                    "image": "postgres:16",
-                                    "env": {"POSTGRES_DB": "appdb"},
-                                    "resources": {"memory_max": 4.0},
-                                    "volume_mounts": [
-                                        {
-                                            "volume_id": "vol_pgdata",
-                                            "mountpoint": "/var/lib/postgresql/data",
-                                            "status": "attached",
-                                        }
-                                    ],
-                                    "version": 3,
                                 },
                             ],
-                            "version": 1,
-                        },
-                        {
-                            "id": "stack_def456",
-                            "name": "worker",
-                            "desired_status": "running",
-                            "networking": "host",
-                            "network_id": None,
-                            "resources": {
-                                "memory_low": 1.0,
-                                "memory_high": 2.0,
-                                "memory_max": 4.0,
-                                "cpu_quota": 1.0,
-                            },
-                            "containers": [
-                                {
-                                    "id": "ctr_g7h8i9",
-                                    "name": "worker",
-                                    "image": "node:20-alpine",
-                                    "command": "npm run worker",
-                                    "env": {"REDIS_URL": "redis://cache:6379"},
-                                    "resources": {"memory_max": 2.0},
-                                    "volume_mounts": [],
-                                    "version": 2,
-                                },
-                            ],
-                            "version": 4,
                         },
                     ],
                 }
@@ -446,10 +322,6 @@ class AgentNodeSpec(BaseModel):
     )
 
     node_id: str = Field(description="Node this spec is scoped to")
-    revision: int = Field(
-        description="Monotonically increasing global revision number; agent can skip reconcile if unchanged. Each object also carries its own version for granular tracking.",
-        examples=[42],
-    )
     networks: list[AgentNetworkSpec] = []
     volumes: list[AgentVolumeSpec] = []
     stacks: list[AgentDesiredStackSpec] = []
@@ -462,14 +334,12 @@ class GetAgentNodeSpecResponse(BaseModel):
                 {
                     "spec": {
                         "node_id": "node_us-east-1_001",
-                        "revision": 42,
                         "networks": [
                             {
                                 "id": "net_abc123",
                                 "name": "production-overlay",
                                 "cidr": "10.0.0.0/16",
                                 "gateway_ip": "10.0.0.1",
-                                "version": 1,
                             }
                         ],
                         "volumes": [
@@ -479,7 +349,6 @@ class GetAgentNodeSpecResponse(BaseModel):
                                 "size_gb": 50.0,
                                 "mountpoint": "/var/lib/postgresql/data",
                                 "status": "in-use",
-                                "version": 1,
                             }
                         ],
                         "stacks": [
@@ -509,25 +378,8 @@ class GetAgentNodeSpecResponse(BaseModel):
                                                 "status": "attached",
                                             }
                                         ],
-                                        "version": 1,
-                                    },
-                                    {
-                                        "id": "ctr_d4e5f6",
-                                        "name": "db",
-                                        "image": "postgres:16",
-                                        "env": {"POSTGRES_DB": "appdb"},
-                                        "resources": {"memory_max": 4.0},
-                                        "volume_mounts": [
-                                            {
-                                                "volume_id": "vol_pgdata",
-                                                "mountpoint": "/var/lib/postgresql/data",
-                                                "status": "attached",
-                                            }
-                                        ],
-                                        "version": 3,
                                     },
                                 ],
-                                "version": 1,
                             }
                         ],
                     }
@@ -585,7 +437,6 @@ class AgentNetworkStatusReport(BaseModel):
                     "observed_status": "available",
                     "message": None,
                     "last_error": None,
-                    "applied_version": 1,
                     "reason": None,
                     "blocked_on": [],
                 },
@@ -594,7 +445,6 @@ class AgentNetworkStatusReport(BaseModel):
                     "observed_status": "error",
                     "message": "Failed to create overlay network",
                     "last_error": "address space already in use",
-                    "applied_version": 3,
                     "reason": "address conflict",
                     "blocked_on": [],
                 },
@@ -609,10 +459,6 @@ class AgentNetworkStatusReport(BaseModel):
     )
     message: str | None = None
     last_error: str | None = None
-    applied_version: int = Field(
-        description="Version of the network spec that was applied",
-        examples=[1, 3],
-    )
     reason: str | None = Field(
         default=None,
         description="Why the resource is in this state, e.g. 'address conflict', 'waiting for upstream'",
@@ -632,7 +478,6 @@ class AgentVolumeStatusReport(BaseModel):
                     "throughput_mbps": 125,
                     "message": None,
                     "last_error": None,
-                    "applied_version": 1,
                     "reason": None,
                     "blocked_on": [],
                 },
@@ -644,7 +489,6 @@ class AgentVolumeStatusReport(BaseModel):
                     "throughput_mbps": 125,
                     "message": "Volume mount failed",
                     "last_error": "device not found",
-                    "applied_version": 2,
                     "reason": "device missing",
                     "blocked_on": [],
                 },
@@ -661,10 +505,6 @@ class AgentVolumeStatusReport(BaseModel):
     throughput_mbps: int | None = Field(default=None, examples=[125, 500])
     message: str | None = None
     last_error: str | None = None
-    applied_version: int = Field(
-        description="Version of the volume spec that was applied",
-        examples=[1, 2],
-    )
     reason: str | None = Field(
         default=None,
         description="Why the resource is in this state, e.g. 'provisioning', 'device missing'",
@@ -682,7 +522,6 @@ class AgentContainerStatusReport(BaseModel):
                     "runtime_id": "sha256:abc123def456",
                     "message": None,
                     "last_error": None,
-                    "applied_version": 1,
                     "reason": None,
                     "blocked_on": [],
                 },
@@ -692,7 +531,6 @@ class AgentContainerStatusReport(BaseModel):
                     "runtime_id": None,
                     "message": "Waiting for volume to be ready before starting container",
                     "last_error": None,
-                    "applied_version": 4,
                     "reason": "waiting for dependency",
                     "blocked_on": [
                         {
@@ -708,7 +546,6 @@ class AgentContainerStatusReport(BaseModel):
                     "runtime_id": "sha256:789ghi012jkl",
                     "message": "Container exited with code 1",
                     "last_error": "FATAL: too many connections for role 'app'",
-                    "applied_version": 5,
                     "reason": "application crash",
                     "blocked_on": [],
                 },
@@ -724,10 +561,6 @@ class AgentContainerStatusReport(BaseModel):
     )
     message: str | None = None
     last_error: str | None = None
-    applied_version: int = Field(
-        description="Version of the container spec that was applied",
-        examples=[1, 5],
-    )
     reason: str | None = Field(
         default=None,
         description="Why the container is in this state, e.g. 'waiting for dependency', 'image pull failed'",
@@ -751,7 +584,6 @@ class AgentStackStatusReport(BaseModel):
                             "runtime_id": "sha256:abc123def456",
                             "message": None,
                             "last_error": None,
-                            "applied_version": 1,
                             "reason": None,
                             "blocked_on": [],
                         },
@@ -761,12 +593,10 @@ class AgentStackStatusReport(BaseModel):
                             "runtime_id": "sha256:789ghi012jkl",
                             "message": None,
                             "last_error": None,
-                            "applied_version": 3,
                             "reason": None,
                             "blocked_on": [],
                         },
                     ],
-                    "applied_version": 1,
                     "reason": None,
                     "blocked_on": [],
                 },
@@ -782,12 +612,10 @@ class AgentStackStatusReport(BaseModel):
                             "runtime_id": None,
                             "message": "Container failed to start",
                             "last_error": "Error: connect ECONNREFUSED 127.0.0.1:6379",
-                            "applied_version": 2,
                             "reason": "dependency unavailable",
                             "blocked_on": [],
                         },
                     ],
-                    "applied_version": 4,
                     "reason": "container failure",
                     "blocked_on": [],
                 },
@@ -800,10 +628,6 @@ class AgentStackStatusReport(BaseModel):
     message: str | None = None
     last_error: str | None = None
     containers: list[AgentContainerStatusReport] = []
-    applied_version: int = Field(
-        description="Version of the stack spec that was applied",
-        examples=[1, 4],
-    )
     reason: str | None = Field(
         default=None,
         description="Why the stack is in this state, e.g. 'container failure', 'network not ready'",
@@ -846,7 +670,6 @@ class ReportAgentNodeStatusRequest(BaseModel):
                             "observed_status": "available",
                             "message": None,
                             "last_error": None,
-                            "applied_version": 1,
                             "reason": None,
                             "blocked_on": [],
                         }
@@ -860,19 +683,6 @@ class ReportAgentNodeStatusRequest(BaseModel):
                             "throughput_mbps": 125,
                             "message": None,
                             "last_error": None,
-                            "applied_version": 1,
-                            "reason": None,
-                            "blocked_on": [],
-                        },
-                        {
-                            "volume_id": "vol_logs",
-                            "observed_status": "in-use",
-                            "size_gb": 10.0,
-                            "iops": 3000,
-                            "throughput_mbps": 125,
-                            "message": None,
-                            "last_error": None,
-                            "applied_version": 2,
                             "reason": None,
                             "blocked_on": [],
                         },
@@ -890,57 +700,12 @@ class ReportAgentNodeStatusRequest(BaseModel):
                                     "runtime_id": "sha256:abc123def456",
                                     "message": None,
                                     "last_error": None,
-                                    "applied_version": 1,
-                                    "reason": None,
-                                    "blocked_on": [],
-                                },
-                                {
-                                    "container_id": "ctr_d4e5f6",
-                                    "observed_status": "running",
-                                    "runtime_id": "sha256:789ghi012jkl",
-                                    "message": None,
-                                    "last_error": None,
-                                    "applied_version": 3,
                                     "reason": None,
                                     "blocked_on": [],
                                 },
                             ],
-                            "applied_version": 1,
                             "reason": None,
                             "blocked_on": [],
-                        },
-                        {
-                            "stack_id": "stack_def456",
-                            "observed_status": "pending",
-                            "message": "Waiting for volume vol_pgdata to be ready",
-                            "last_error": None,
-                            "containers": [
-                                {
-                                    "container_id": "ctr_g7h8i9",
-                                    "observed_status": "pending",
-                                    "runtime_id": None,
-                                    "message": "Waiting for volume to be ready before starting container",
-                                    "last_error": None,
-                                    "applied_version": 2,
-                                    "reason": "waiting for dependency",
-                                    "blocked_on": [
-                                        {
-                                            "resource_type": "volume",
-                                            "resource_id": "vol_pgdata",
-                                            "condition": "ready",
-                                        }
-                                    ],
-                                },
-                            ],
-                            "applied_version": 4,
-                            "reason": "dependency not ready",
-                            "blocked_on": [
-                                {
-                                    "resource_type": "volume",
-                                    "resource_id": "vol_pgdata",
-                                    "condition": "ready",
-                                }
-                            ],
                         },
                     ],
                     "resources": {
@@ -949,7 +714,6 @@ class ReportAgentNodeStatusRequest(BaseModel):
                         "disk_gb": {"total": 100.0, "available": 85.3, "allocated": 14.7},
                     },
                     "agent_version": "1.4.2",
-                    "spec_revision": 42,
                     "reported_at_unix": 1736942400,
                 }
             ]
@@ -961,11 +725,6 @@ class ReportAgentNodeStatusRequest(BaseModel):
     stacks: list[AgentStackStatusReport] = []
     resources: AgentResourceReport = AgentResourceReport()
     agent_version: str | None = None
-    spec_revision: int | None = Field(
-        default=None,
-        description="Revision of the node spec this report is based on",
-        examples=[42],
-    )
     reported_at_unix: int = Field(description="UTC timestamp in seconds since epoch")
 
 
