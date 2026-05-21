@@ -45,20 +45,26 @@ class ActionStatus(str, Enum):
 
 
 class ActionName(str, Enum):
+    CREATE_STACK = "create_stack"
     UPDATE_STACK = "update_stack"
     RESIZE_STACK = "resize_stack"
     START_STACK = "start_stack"
     STOP_STACK = "stop_stack"
     RESTART_STACK = "restart_stack"
+    DELETE_STACK = "delete_stack"
+    CREATE_CONTAINER = "create_container"
     UPDATE_CONTAINER = "update_container"
     RESIZE_CONTAINER = "resize_container"
     START_CONTAINER = "start_container"
     STOP_CONTAINER = "stop_container"
     RESTART_CONTAINER = "restart_container"
+    DELETE_CONTAINER = "delete_container"
+    CREATE_VOLUME = "create_volume"
     ATTACH_VOLUME = "attach_volume"
     DETACH_VOLUME = "detach_volume"
     RESIZE_VOLUME = "resize_volume"
     SNAPSHOT_VOLUME = "snapshot_volume"
+    DELETE_VOLUME = "delete_volume"
 
 
 class ResourceType(str, Enum):
