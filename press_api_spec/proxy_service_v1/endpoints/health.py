@@ -10,11 +10,13 @@ __all__ = ["HealthGroup", "GetHealth"]
 
 HealthGroup = EndpointGroup(prefix="/api", tags=("Health",))
 
+
 class GetHealth(Endpoint):
     method = Method.GET
     path = "/health"
     name = "get_health"
     summary = "Service health and version probe"
     Response: TypeAlias = HealthResponse
+
 
 HealthGroup.add(GetHealth)

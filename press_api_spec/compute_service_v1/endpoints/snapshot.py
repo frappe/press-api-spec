@@ -20,6 +20,7 @@ __all__ = [
 
 SnapshotGroup = EndpointGroup(prefix="/api/snapshots", tags=("Snapshots",))
 
+
 class ListSnapshots(Endpoint):
     method = Method.GET
     path = ""
@@ -28,7 +29,9 @@ class ListSnapshots(Endpoint):
     Response: TypeAlias = ListSnapshotsResponse
     Query: TypeAlias = ListSnapshotsQuery
 
+
 SnapshotGroup.add(ListSnapshots)
+
 
 class GetSnapshot(Endpoint):
     method = Method.GET
@@ -37,7 +40,9 @@ class GetSnapshot(Endpoint):
     summary = "Fetch a single snapshot by id."
     Response: TypeAlias = GetSnapshotResponse
 
+
 SnapshotGroup.add(GetSnapshot)
+
 
 class DeleteSnapshot(Endpoint):
     method = Method.DELETE
@@ -45,5 +50,6 @@ class DeleteSnapshot(Endpoint):
     name = "delete_snapshot"
     summary = "Delete a snapshot."
     Response: TypeAlias = DeleteSnapshotResponse
+
 
 SnapshotGroup.add(DeleteSnapshot)

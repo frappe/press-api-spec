@@ -48,8 +48,12 @@ class Network(BaseModel):
     )
 
     id: str = Field(description="Server-generated unique identifier")
-    name: str = Field(examples=["production-overlay", "staging"], description="User-provided network name")
-    description: str | None = Field(default=None, examples=["Overlay network for production workloads"])
+    name: str = Field(
+        examples=["production-overlay", "staging"], description="User-provided network name"
+    )
+    description: str | None = Field(
+        default=None, examples=["Overlay network for production workloads"]
+    )
     cidr: str = Field(
         examples=["10.0.0.0/16", "10.1.0.0/16"],
         description="CIDR block for the network address space",
@@ -81,7 +85,9 @@ class CreateNetworkRequest(BaseModel):
     )
 
     name: str = Field(examples=["production-overlay", "staging"])
-    description: str | None = Field(default=None, examples=["Overlay network for production workloads"])
+    description: str | None = Field(
+        default=None, examples=["Overlay network for production workloads"]
+    )
     cidr: str = Field(examples=["10.0.0.0/16", "10.1.0.0/16"])
 
 
