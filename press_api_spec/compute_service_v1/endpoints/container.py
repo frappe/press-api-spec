@@ -3,10 +3,9 @@ from __future__ import annotations
 from typing import TypeAlias
 
 from press_api_spec.compute_service_v1.base import Endpoint, EndpointGroup, Method
-from press_api_spec.compute_service_v1.models.action import (
-    GetActionResponse,
-    ListActionsQuery,
-    ListActionsResponse,
+from press_api_spec.compute_service_v1.models.activity import (
+    ListActivityLogsQuery,
+    ListActivityLogsResponse,
 )
 from press_api_spec.compute_service_v1.models.container import (
     ContainerActionResponse,
@@ -33,8 +32,7 @@ __all__ = [
     "StartContainer",
     "StopContainer",
     "RestartContainer",
-    "ListContainerActions",
-    "GetContainerAction",
+    "ListContainerActivity",
 ]
 
 
@@ -42,6 +40,7 @@ ContainerGroup = EndpointGroup(
     prefix="/api/stacks/<stack_id>/containers",
     tags=("Containers",),
 )
+
 
 class CreateContainer(Endpoint):
     method = Method.POST
@@ -51,7 +50,9 @@ class CreateContainer(Endpoint):
     Body: TypeAlias = CreateContainerRequest
     Response: TypeAlias = CreateContainerResponse
 
+
 ContainerGroup.add(CreateContainer)
+
 
 class ListContainers(Endpoint):
     method = Method.GET
@@ -61,7 +62,9 @@ class ListContainers(Endpoint):
     Response: TypeAlias = ListContainersResponse
     Query: TypeAlias = ListContainersQuery
 
+
 ContainerGroup.add(ListContainers)
+
 
 class GetContainer(Endpoint):
     method = Method.GET
@@ -70,7 +73,9 @@ class GetContainer(Endpoint):
     summary = "Fetch a single container by id"
     Response: TypeAlias = GetContainerResponse
 
+
 ContainerGroup.add(GetContainer)
+
 
 class UpdateContainer(Endpoint):
     method = Method.PATCH
@@ -80,7 +85,9 @@ class UpdateContainer(Endpoint):
     Body: TypeAlias = UpdateContainerRequest
     Response: TypeAlias = UpdateContainerResponse
 
+
 ContainerGroup.add(UpdateContainer)
+
 
 class DeleteContainer(Endpoint):
     method = Method.DELETE
@@ -89,7 +96,9 @@ class DeleteContainer(Endpoint):
     summary = "Delete a container"
     Response: TypeAlias = DeleteContainerResponse
 
+
 ContainerGroup.add(DeleteContainer)
+
 
 class ResizeContainer(Endpoint):
     method = Method.POST
@@ -99,7 +108,9 @@ class ResizeContainer(Endpoint):
     Body: TypeAlias = ResizeContainerRequest
     Response: TypeAlias = ResizeContainerResponse
 
+
 ContainerGroup.add(ResizeContainer)
+
 
 class StartContainer(Endpoint):
     method = Method.POST
@@ -108,7 +119,9 @@ class StartContainer(Endpoint):
     summary = "Start a stopped container"
     Response: TypeAlias = ContainerActionResponse
 
+
 ContainerGroup.add(StartContainer)
+
 
 class StopContainer(Endpoint):
     method = Method.POST
@@ -117,7 +130,9 @@ class StopContainer(Endpoint):
     summary = "Stop a running container"
     Response: TypeAlias = ContainerActionResponse
 
+
 ContainerGroup.add(StopContainer)
+
 
 class RestartContainer(Endpoint):
     method = Method.POST
@@ -126,25 +141,17 @@ class RestartContainer(Endpoint):
     summary = "Restart a container"
     Response: TypeAlias = ContainerActionResponse
 
+
 ContainerGroup.add(RestartContainer)
 
 
-class ListContainerActions(Endpoint):
+class ListContainerActivity(Endpoint):
     method = Method.GET
-    path = "/actions"
-    name = "list_container_actions"
-    summary = "List all action records for containers in a stack"
-    Response: TypeAlias = ListActionsResponse
-    Query: TypeAlias = ListActionsQuery
-
-ContainerGroup.add(ListContainerActions)
+    path = "/<container_id>/activity"
+    name = "list_container_activity"
+    summary = "List activity log entries for a container"
+    Response: TypeAlias = ListActivityLogsResponse
+    Query: TypeAlias = ListActivityLogsQuery
 
 
-class GetContainerAction(Endpoint):
-    method = Method.GET
-    path = "/actions/<action_id>"
-    name = "get_container_action"
-    summary = "Fetch a container action record by id"
-    Response: TypeAlias = GetActionResponse
-
-ContainerGroup.add(GetContainerAction)
+ContainerGroup.add(ListContainerActivity)

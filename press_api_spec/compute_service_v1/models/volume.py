@@ -3,12 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from pydantic import BaseModel, Field, ConfigDict
 
-from press_api_spec.compute_service_v1.base import (
-    ActionRecord,
-    EmptyResponse,
-    Paginated,
-    PaginationParams,
-)
+from press_api_spec.compute_service_v1.base import EmptyResponse, Paginated, PaginationParams
 
 __all__ = [
     "VolumeStatus",
@@ -213,7 +208,6 @@ class AttachVolumeRequest(BaseModel):
 
 class AttachVolumeResponse(BaseModel):
     volume: Volume
-    action: ActionRecord
 
 
 class DetachVolumeRequest(BaseModel):
@@ -224,7 +218,6 @@ class DetachVolumeRequest(BaseModel):
 
 class DetachVolumeResponse(BaseModel):
     volume: Volume
-    action: ActionRecord
 
 
 class ResizeVolumeRequest(BaseModel):
@@ -239,7 +232,6 @@ class ResizeVolumeRequest(BaseModel):
 
 class ResizeVolumeResponse(BaseModel):
     volume: Volume
-    action: ActionRecord
 
 
 class SnapshotVolumeRequest(BaseModel):
@@ -248,7 +240,6 @@ class SnapshotVolumeRequest(BaseModel):
 
 class SnapshotVolumeResponse(BaseModel):
     snapshot: Snapshot
-    action: ActionRecord
 
 
 class GetSnapshotResponse(BaseModel):

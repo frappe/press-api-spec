@@ -3,12 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from pydantic import BaseModel, Field, ConfigDict
 
-from press_api_spec.proxy_service_v1.base import (
-    ActionRecord,
-    EmptyResponse,
-    Paginated,
-    PaginationParams,
-)
+from press_api_spec.proxy_service_v1.base import EmptyResponse, Paginated, PaginationParams
 
 __all__ = [
     "DomainStatus",
@@ -148,12 +143,10 @@ class GetCertificateChainResponse(BaseModel):
 
 class VerifyDomainResponse(BaseModel):
     domain: Domain
-    action: ActionRecord
 
 
 class RenewCertificateResponse(BaseModel):
     domain: Domain
-    action: ActionRecord
 
 
 DeleteDomainResponse = EmptyResponse

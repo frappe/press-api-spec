@@ -3,12 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from pydantic import BaseModel, Field, ConfigDict
 
-from press_api_spec.compute_service_v1.base import (
-    ActionRecord,
-    EmptyResponse,
-    Paginated,
-    PaginationParams,
-)
+from press_api_spec.compute_service_v1.base import EmptyResponse, Paginated, PaginationParams
 from press_api_spec.compute_service_v1.models.container import Container, CreateContainerRequest
 
 __all__ = [
@@ -261,9 +256,7 @@ class ResizeStackRequest(BaseModel):
 
 class ResizeStackResponse(BaseModel):
     stack: Stack
-    action: ActionRecord
 
 
 class StackActionResponse(BaseModel):
     stack: Stack
-    action: ActionRecord

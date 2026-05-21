@@ -3,6 +3,10 @@ from __future__ import annotations
 from typing import TypeAlias
 
 from press_api_spec.compute_service_v1.base import Endpoint, EndpointGroup, Method
+from press_api_spec.compute_service_v1.models.activity import (
+    ListActivityLogsQuery,
+    ListActivityLogsResponse,
+)
 from press_api_spec.compute_service_v1.models.network import (
     CreateNetworkRequest,
     CreateNetworkResponse,
@@ -21,6 +25,7 @@ __all__ = [
     "GetNetwork",
     "UpdateNetwork",
     "DeleteNetwork",
+    "ListNetworkActivity",
 ]
 
 
@@ -83,3 +88,15 @@ class DeleteNetwork(Endpoint):
 
 
 NetworkGroup.add(DeleteNetwork)
+
+
+class ListNetworkActivity(Endpoint):
+    method = Method.GET
+    path = "/<network_id>/activity"
+    name = "list_network_activity"
+    summary = "List activity log entries for a network"
+    Response: TypeAlias = ListActivityLogsResponse
+    Query: TypeAlias = ListActivityLogsQuery
+
+
+NetworkGroup.add(ListNetworkActivity)

@@ -3,10 +3,9 @@ from __future__ import annotations
 from typing import TypeAlias
 
 from press_api_spec.compute_service_v1.base import Endpoint, EndpointGroup, Method
-from press_api_spec.compute_service_v1.models.action import (
-    GetActionResponse,
-    ListActionsQuery,
-    ListActionsResponse,
+from press_api_spec.compute_service_v1.models.activity import (
+    ListActivityLogsQuery,
+    ListActivityLogsResponse,
 )
 from press_api_spec.compute_service_v1.models.volume import (
     AttachVolumeRequest,
@@ -38,12 +37,12 @@ __all__ = [
     "DetachVolume",
     "ResizeVolume",
     "SnapshotVolume",
-    "ListVolumeActions",
-    "GetVolumeAction",
+    "ListVolumeActivity",
 ]
 
 
 VolumeGroup = EndpointGroup(prefix="/api/volumes", tags=("Volumes",))
+
 
 class CreateVolume(Endpoint):
     method = Method.POST
@@ -53,7 +52,9 @@ class CreateVolume(Endpoint):
     Body: TypeAlias = CreateVolumeRequest
     Response: TypeAlias = CreateVolumeResponse
 
+
 VolumeGroup.add(CreateVolume)
+
 
 class ListVolumes(Endpoint):
     method = Method.GET
@@ -63,7 +64,9 @@ class ListVolumes(Endpoint):
     Response: TypeAlias = ListVolumesResponse
     Query: TypeAlias = ListVolumesQuery
 
+
 VolumeGroup.add(ListVolumes)
+
 
 class GetVolume(Endpoint):
     method = Method.GET
@@ -72,7 +75,9 @@ class GetVolume(Endpoint):
     summary = "Fetch a single volume by id."
     Response: TypeAlias = GetVolumeResponse
 
+
 VolumeGroup.add(GetVolume)
+
 
 class UpdateVolume(Endpoint):
     method = Method.PATCH
@@ -82,7 +87,9 @@ class UpdateVolume(Endpoint):
     Body: TypeAlias = UpdateVolumeRequest
     Response: TypeAlias = UpdateVolumeResponse
 
+
 VolumeGroup.add(UpdateVolume)
+
 
 class DeleteVolume(Endpoint):
     method = Method.DELETE
@@ -91,7 +98,9 @@ class DeleteVolume(Endpoint):
     summary = "Delete a volume."
     Response: TypeAlias = DeleteVolumeResponse
 
+
 VolumeGroup.add(DeleteVolume)
+
 
 class AttachVolume(Endpoint):
     method = Method.POST
@@ -101,7 +110,9 @@ class AttachVolume(Endpoint):
     Body: TypeAlias = AttachVolumeRequest
     Response: TypeAlias = AttachVolumeResponse
 
+
 VolumeGroup.add(AttachVolume)
+
 
 class DetachVolume(Endpoint):
     method = Method.POST
@@ -111,7 +122,9 @@ class DetachVolume(Endpoint):
     Body: TypeAlias = DetachVolumeRequest
     Response: TypeAlias = DetachVolumeResponse
 
+
 VolumeGroup.add(DetachVolume)
+
 
 class ResizeVolume(Endpoint):
     method = Method.POST
@@ -121,7 +134,9 @@ class ResizeVolume(Endpoint):
     Body: TypeAlias = ResizeVolumeRequest
     Response: TypeAlias = ResizeVolumeResponse
 
+
 VolumeGroup.add(ResizeVolume)
+
 
 class SnapshotVolume(Endpoint):
     method = Method.POST
@@ -131,25 +146,17 @@ class SnapshotVolume(Endpoint):
     Body: TypeAlias = SnapshotVolumeRequest
     Response: TypeAlias = SnapshotVolumeResponse
 
+
 VolumeGroup.add(SnapshotVolume)
 
 
-class ListVolumeActions(Endpoint):
+class ListVolumeActivity(Endpoint):
     method = Method.GET
-    path = "/actions"
-    name = "list_volume_actions"
-    summary = "List all action records for volumes"
-    Response: TypeAlias = ListActionsResponse
-    Query: TypeAlias = ListActionsQuery
-
-VolumeGroup.add(ListVolumeActions)
+    path = "/<volume_id>/activity"
+    name = "list_volume_activity"
+    summary = "List activity log entries for a volume"
+    Response: TypeAlias = ListActivityLogsResponse
+    Query: TypeAlias = ListActivityLogsQuery
 
 
-class GetVolumeAction(Endpoint):
-    method = Method.GET
-    path = "/actions/<action_id>"
-    name = "get_volume_action"
-    summary = "Fetch a volume action record by id"
-    Response: TypeAlias = GetActionResponse
-
-VolumeGroup.add(GetVolumeAction)
+VolumeGroup.add(ListVolumeActivity)

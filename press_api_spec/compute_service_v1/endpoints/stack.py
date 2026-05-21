@@ -3,10 +3,9 @@ from __future__ import annotations
 from typing import TypeAlias
 
 from press_api_spec.compute_service_v1.base import Endpoint, EndpointGroup, Method
-from press_api_spec.compute_service_v1.models.action import (
-    GetActionResponse,
-    ListActionsQuery,
-    ListActionsResponse,
+from press_api_spec.compute_service_v1.models.activity import (
+    ListActivityLogsQuery,
+    ListActivityLogsResponse,
 )
 from press_api_spec.compute_service_v1.models.stack import (
     CreateStackRequest,
@@ -33,8 +32,7 @@ __all__ = [
     "StartStack",
     "StopStack",
     "RestartStack",
-    "ListStackActions",
-    "GetStackAction",
+    "ListStackActivity",
 ]
 
 
@@ -144,24 +142,13 @@ class RestartStack(Endpoint):
 StackGroup.add(RestartStack)
 
 
-class ListStackActions(Endpoint):
+class ListStackActivity(Endpoint):
     method = Method.GET
-    path = "/actions"
-    name = "list_stack_actions"
-    summary = "List all action records for stacks"
-    Response: TypeAlias = ListActionsResponse
-    Query: TypeAlias = ListActionsQuery
+    path = "/<stack_id>/activity"
+    name = "list_stack_activity"
+    summary = "List activity log entries for a stack"
+    Response: TypeAlias = ListActivityLogsResponse
+    Query: TypeAlias = ListActivityLogsQuery
 
 
-StackGroup.add(ListStackActions)
-
-
-class GetStackAction(Endpoint):
-    method = Method.GET
-    path = "/actions/<action_id>"
-    name = "get_stack_action"
-    summary = "Fetch a stack action record by id"
-    Response: TypeAlias = GetActionResponse
-
-
-StackGroup.add(GetStackAction)
+StackGroup.add(ListStackActivity)
