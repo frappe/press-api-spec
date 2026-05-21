@@ -52,6 +52,11 @@ __all__ = [
     "AgentResourceReport",
     "ReportAgentNodeStatusRequest",
     "ReportAgentNodeStatusResponse",
+    "VolumeAgentNodeSpec",
+    "GetVolumeAgentNodeSpecResponse",
+    "VolumeAgentStatusReport",
+    "ReportVolumeAgentStatusRequest",
+    "ReportVolumeAgentStatusResponse",
 ]
 
 
@@ -729,3 +734,118 @@ class ReportAgentNodeStatusRequest(BaseModel):
 
 
 ReportAgentNodeStatusResponse = EmptyResponse
+
+
+# ---------------------------------------------------------------------------
+# Volume Agent — separated from runtime agent
+# ---------------------------------------------------------------------------
+# The volume agent manages volume lifecycle (create, resize, attach, detach,
+# delete) independently. The runtime agent only creates local Docker volumes
+# for container mounts and reports them in container props.
+
+
+class VolumeAgentNodeSpec(BaseModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "node_id": "node_us-east-1_001",
+                    "volumes": [
+                        {
+                            "id": "vol_pgdata",
+                            "name": "postgres-data",
+                            "size_gb": 50.0,
+                            "status": "available",
+                        },
+                    ],
+                }
+            ]
+        }
+    )
+
+    node_id: str = Field(description="Node this spec is scoped to")
+    volumes: list[AgentVolumeSpec] = []
+
+
+class GetVolumeAgentNodeSpecResponse(BaseModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "spec": {
+                        "node_id": "node_us-east-1_001",
+                        "volumes": [
+                            {
+                                "id": "vol_pgdata",
+                                "name": "postgres-data",
+                                "size_gb": 50.0,
+                                "status": "available",
+                            }
+                        ],
+                    }
+                }
+            ]
+        }
+    )
+
+    spec: VolumeAgentNodeSpec
+
+
+class VolumeAgentStatusReport(BaseModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "volume_id": "vol_pgdata",
+                    "observed_status": "available",
+                    "size_gb": 50.0,
+                    "message": None,
+                    "last_error": None,
+                    "reason": None,
+                    "blocked_on": [],
+                },
+            ]
+        }
+    )
+
+    volume_id: str
+    observed_status: VolumeStatus = Field(description="Observed state of the volume on this node")
+    size_gb: float | None = Field(default=None, examples=[10.0, 50.0, 100.0])
+    message: str | None = None
+    last_error: str | None = None
+    reason: str | None = Field(
+        default=None,
+        description="Why the resource is in this state, e.g. 'provisioning', 'device missing'",
+    )
+    blocked_on: list[Dependency] = []
+
+
+class ReportVolumeAgentStatusRequest(BaseModel):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "volumes": [
+                        {
+                            "volume_id": "vol_pgdata",
+                            "observed_status": "available",
+                            "size_gb": 50.0,
+                            "message": None,
+                            "last_error": None,
+                            "reason": None,
+                            "blocked_on": [],
+                        },
+                    ],
+                    "agent_version": "1.0.0",
+                    "reported_at_unix": 1736942400,
+                }
+            ]
+        }
+    )
+
+    volumes: list[VolumeAgentStatusReport] = []
+    agent_version: str | None = None
+    reported_at_unix: int = Field(description="UTC timestamp in seconds since epoch")
+
+
+ReportVolumeAgentStatusResponse = EmptyResponse

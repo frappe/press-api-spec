@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "press-api-spec"
-version = "0.1.5"
+version = "0.1.6"
 description = "REST API specifications for the Press platform"
 requires-python = ">=3.10"
 dependencies = [

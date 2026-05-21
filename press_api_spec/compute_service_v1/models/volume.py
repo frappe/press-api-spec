@@ -80,8 +80,6 @@ class Volume(BaseModel):
                     "id": "vol_abc123",
                     "description": "PostgreSQL data",
                     "size": 100,
-                    "iops": 3000,
-                    "throughput": 125,
                     "status": "in-use",
                     "mounts": [
                         {
@@ -98,8 +96,6 @@ class Volume(BaseModel):
                     "id": "vol_def456",
                     "description": "Redis cache",
                     "size": 20,
-                    "iops": 3000,
-                    "throughput": 125,
                     "status": "available",
                     "mounts": [],
                     "created_at_unix": 1736949600,
@@ -113,8 +109,6 @@ class Volume(BaseModel):
     name: str = Field(examples=["postgres-data", "app-logs"])
     description: str = Field(examples=["PostgreSQL data", "Redis cache"])
     size: int = Field(examples=[10, 100, 500])
-    iops: int = Field(default=0, examples=[3000, 16000])
-    throughput: int = Field(default=0, examples=[125, 500])
     status: VolumeStatus = VolumeStatus.CREATING
     mounts: list[VolumeMount] = []
     created_at_unix: int
@@ -154,8 +148,6 @@ class CreateVolumeRequest(BaseModel):
                 {
                     "description": "PostgreSQL data",
                     "size": 100,
-                    "iops": 3000,
-                    "throughput": 125,
                     "snapshot_id": None,
                 }
             ]
@@ -165,8 +157,6 @@ class CreateVolumeRequest(BaseModel):
     name: str = Field(examples=["postgres-data", "app-logs"])
     description: str = Field(examples=["PostgreSQL data", "Redis cache"])
     size: int = Field(examples=[10, 100, 500])
-    iops: int = Field(default=0, examples=[3000, 16000])
-    throughput: int = Field(default=0, examples=[125, 500])
     snapshot_id: str | None = None
 
 
