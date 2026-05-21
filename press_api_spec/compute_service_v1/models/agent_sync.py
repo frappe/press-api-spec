@@ -40,6 +40,7 @@ __all__ = [
     "AgentNetworkSpec",
     "AgentVolumeSpec",
     "AgentDesiredContainerSpec",
+    "PortMapSpec",
     "AgentDesiredStackSpec",
     "AgentNodeSpec",
     "GetAgentNodeSpecResponse",
@@ -178,6 +179,11 @@ class AgentDesiredContainerSpec(BaseModel):
     volume_mounts: list[ContainerVolumeMount] = []
 
 
+class PortMapSpec(BaseModel):
+    node_port: int = Field(description="Port on the node (host)")
+    container_port: int = Field(description="Port inside the container")
+
+
 class AgentDesiredStackSpec(BaseModel):
     model_config = ConfigDict(
         json_schema_extra={
@@ -225,6 +231,12 @@ class AgentDesiredStackSpec(BaseModel):
                             ],
                         },
                     ],
+                    "port_map": [
+                        {
+                            "node_port": 8080,
+                            "container_port": 80,
+                        }
+                    ],
                 },
                 {
                     "id": "stack_def456",
@@ -249,6 +261,7 @@ class AgentDesiredStackSpec(BaseModel):
                             "volume_mounts": [],
                         },
                     ],
+                    "port_map": [],
                 },
             ]
         }
@@ -265,6 +278,7 @@ class AgentDesiredStackSpec(BaseModel):
     )
     resources: StackResources = StackResources()
     containers: list[AgentDesiredContainerSpec] = []
+    port_map: list[PortMapSpec] = []
 
 
 class AgentNodeSpec(BaseModel):
