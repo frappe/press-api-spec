@@ -43,7 +43,9 @@ __all__ = [
 class VolumeStatus(str, Enum):
     CREATING = "creating"
     AVAILABLE = "available"
+    ATTACHING = "attaching"
     IN_USE = "in-use"
+    DETACHING = "detaching"
     DELETING = "deleting"
     DELETED = "deleted"
     ERROR = "error"
