@@ -3,3 +3,4 @@ __pycache__
 docs
 *.DS_STORE
 .opencode
+press_api_spec.egg-info
