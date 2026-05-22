@@ -170,6 +170,7 @@ class AgentDesiredContainerSpec(BaseModel):
 
     id: str = Field(description="Container ID assigned by the control plane")
     name: str = Field(examples=["web", "db"])
+    desired_status: AgentDesiredStatus = AgentDesiredStatus.RUNNING
     image: str = Field(examples=["nginx:1.27-alpine", "postgres:16"])
     command: str | None = Field(
         default=None, examples=["npm start", "postgres -c max_connections=200"]
