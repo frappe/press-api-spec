@@ -194,6 +194,7 @@ class CreateStackRequest(BaseModel):
 
     name: str = Field(examples=["my-app", "production-api"])
     description: str | None = Field(default=None, examples=["Production API stack"])
+    resources: StackResources = Field(default_factory=StackResources)
     containers: list[CreateContainerRequest] = []
     runtime: Runtime = Runtime.CONTAINER
     networking: NetworkingMode = NetworkingMode.HOST
