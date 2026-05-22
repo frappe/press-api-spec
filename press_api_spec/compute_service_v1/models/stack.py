@@ -51,9 +51,9 @@ class StackStatus(str, Enum):
 
 
 class StackResources(BaseModel):
-    memory_low: float | None = Field(default=None, examples=[1.0, 2.0])
-    memory_high: float | None = Field(default=None, examples=[2.0, 4.0])
-    memory_max: float | None = Field(default=None, examples=[2.0, 8.0])
+    memory_low: int | None = Field(default=None, examples=[1024, 2048])
+    memory_high: int | None = Field(default=None, examples=[2048, 4096])
+    memory_max: int | None = Field(default=None, examples=[2048, 8192])
     cpu_quota: float | None = Field(default=None, examples=[0.5, 1.0, 2.0])
 
 
@@ -242,9 +242,9 @@ class ResizeStackRequest(BaseModel):
             "examples": [
                 {
                     "resources": {
-                        "memory_low": 2.0,
-                        "memory_high": 4.0,
-                        "memory_max": 8.0,
+                        "memory_low": 2048,
+                        "memory_high": 4096,
+                        "memory_max": 8192,
                         "cpu_quota": 2.0,
                     }
                 }
