@@ -10,6 +10,7 @@ __all__ = [
     "ContainerStatus",
     "ContainerResources",
     "ContainerVolumeMount",
+    "ContainerStaticConfig",
     "Container",
     "CreateContainerRequest",
     "CreateContainerResponse",
@@ -46,6 +47,11 @@ class ContainerVolumeMount(BaseModel):
     status: VolumeMountStatus = VolumeMountStatus.ATTACHED
 
 
+class ContainerStaticConfig(BaseModel):
+    mountpoint: str = Field(examples=["/etc/nginx/nginx.conf"])
+    content: str = Field(examples=["events {}"])
+
+
 class ContainerResources(BaseModel):
     memory_low: int | None = Field(default=None, examples=[1024, 2048])
     memory_high: int | None = Field(default=None, examples=[2048, 4096])
@@ -67,6 +73,9 @@ class Container(BaseModel):
                     "env": {"NODE_ENV": "production"},
                     "volume_mounts": [
                         {"volume_id": "vol_abc123", "mountpoint": "/data", "status": "attached"}
+                    ],
+                    "static_configs": [
+                        {"mountpoint": "/etc/nginx/nginx.conf", "content": "events {}"}
                     ],
                     "created_at_unix": 1736935200,
                     "updated_at_unix": 1736942400,
@@ -98,6 +107,7 @@ class Container(BaseModel):
     # Environment variables (modifiable)
     env: dict[str, str] = Field(default_factory=dict, description="Environment variables")
     volume_mounts: list[ContainerVolumeMount] = []
+    static_configs: list[ContainerStaticConfig] = []
     created_at_unix: int
     updated_at_unix: int
 
@@ -115,6 +125,9 @@ class CreateContainerRequest(BaseModel):
                     "volume_mounts": [
                         {"volume_id": "vol_abc123", "mountpoint": "/data", "status": "attached"}
                     ],
+                    "static_configs": [
+                        {"mountpoint": "/etc/nginx/nginx.conf", "content": "events {}"}
+                    ],
                 }
             ]
         }
@@ -126,6 +139,7 @@ class CreateContainerRequest(BaseModel):
     command: str | None = Field(default=None, examples=["npm start", "python app.py"])
     env: dict[str, str] = {}
     volume_mounts: list[ContainerVolumeMount] = []
+    static_configs: list[ContainerStaticConfig] = []
 
 
 class CreateContainerResponse(BaseModel):

@@ -27,6 +27,7 @@ from press_api_spec.compute_service_v1.models.container import (
     ContainerResources,
     ContainerStatus,
     ContainerVolumeMount,
+    ContainerStaticConfig,
 )
 from press_api_spec.compute_service_v1.models.stack import (
     NetworkingMode,
@@ -178,6 +179,7 @@ class AgentDesiredContainerSpec(BaseModel):
     env: dict[str, str] = Field(default_factory=dict)
     resources: ContainerResources = ContainerResources()
     volume_mounts: list[ContainerVolumeMount] = []
+    static_configs: list[ContainerStaticConfig] = []
 
 
 class PortMapSpec(BaseModel):
