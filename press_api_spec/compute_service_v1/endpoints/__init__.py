@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from press_api_spec.compute_service_v1.base import Endpoint, EndpointGroup
-from press_api_spec.compute_service_v1.endpoints.action import *  # noqa: F401,F403
-from press_api_spec.compute_service_v1.endpoints.action import RuntimeAgentActionGroup
 from press_api_spec.compute_service_v1.endpoints.agent_sync import *  # noqa: F401,F403
 from press_api_spec.compute_service_v1.endpoints.agent_sync import (
     AgentSyncGroup,
@@ -25,7 +23,6 @@ ALL_GROUPS: list[EndpointGroup] = [
     HealthGroup,
     AgentSyncGroup,
     VolumeAgentSyncGroup,
-    RuntimeAgentActionGroup,
     NetworkGroup,
     StackGroup,
     ContainerGroup,

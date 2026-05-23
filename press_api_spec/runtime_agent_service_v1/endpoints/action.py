@@ -2,15 +2,14 @@ from __future__ import annotations
 
 from typing import TypeAlias
 
-from press_api_spec.compute_service_v1.base import Endpoint, EndpointGroup, Method
-from press_api_spec.compute_service_v1.models.action import RuntimeAgentActionResponse
+from press_api_spec.runtime_agent_service_v1.base import Endpoint, EndpointGroup, Method
+from press_api_spec.runtime_agent_service_v1.models.action import RuntimeAgentActionResponse
 
 __all__ = [
     "RuntimeAgentActionGroup",
     "RestartRuntimeStack",
     "RestartRuntimeContainer",
 ]
-
 
 RuntimeAgentActionGroup = EndpointGroup(
     prefix="/press-compute-runtime",

@@ -28,6 +28,7 @@ from press_api_spec.compute_service_v1.base import (
 from press_api_spec.node_agent_contract_v1 import ALL_ENDPOINTS as NODE_AGENT_CONTRACT_ENDPOINTS
 from press_api_spec.node_agent_service_v1 import ALL_ENDPOINTS as NODE_AGENT_ENDPOINTS
 from press_api_spec.proxy_service_v1 import ALL_ENDPOINTS as PROXY_ENDPOINTS
+from press_api_spec.runtime_agent_service_v1 import ALL_ENDPOINTS as RUNTIME_AGENT_ENDPOINTS
 from pydantic import BaseModel
 
 DOCS_DIR = Path(__file__).parent / "docs"
@@ -80,6 +81,13 @@ SERVICES: list[ServiceSpec] = [
         version="0.1.0",
         description="API that every node-agent-compatible agent must implement. Node Agent calls these endpoints to discover routes and check liveness.",
         endpoints=NODE_AGENT_CONTRACT_ENDPOINTS,
+    ),
+    ServiceSpec(
+        slug="runtime-agent-service-v1",
+        title="Runtime Agent Service",
+        version="0.1.0",
+        description="Signalling actions for the Runtime Agent — restart stacks and containers without changing desired state.",
+        endpoints=RUNTIME_AGENT_ENDPOINTS,
     ),
 ]
 
