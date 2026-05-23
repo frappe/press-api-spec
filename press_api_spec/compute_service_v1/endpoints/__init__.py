@@ -21,12 +21,12 @@ from press_api_spec.compute_service_v1.endpoints.volume import VolumeGroup
 
 ALL_GROUPS: list[EndpointGroup] = [
     HealthGroup,
-    AgentSyncGroup,
-    VolumeAgentSyncGroup,
     NetworkGroup,
     StackGroup,
     ContainerGroup,
     VolumeGroup,
     SnapshotGroup,
+    AgentSyncGroup,
+    VolumeAgentSyncGroup,
 ]
 ALL_ENDPOINTS: list[type[Endpoint]] = [ep for group in ALL_GROUPS for ep in group]
