@@ -140,7 +140,7 @@ class Endpoint(metaclass=EndpointMeta):
         return [m.group("name") for m in _PATH_PARAM_RE.finditer(cls.path)]
 
     @classmethod
-    def url(cls, **params: Any) -> str:
+    def url(cls, full_path: bool = True, **params: Any) -> str:
         required = cls.path_params()
         missing = [p for p in required if p not in params]
         if missing:
@@ -149,7 +149,11 @@ class Endpoint(metaclass=EndpointMeta):
         def repl(match: re.Match[str]) -> str:
             return str(params[match.group("name")])
 
-        return _PATH_PARAM_RE.sub(repl, cls.path)
+        return _PATH_PARAM_RE.sub(repl, cls.full_path if full_path else cls.path)
+
+    @classmethod
+    def full_url(cls, **params: Any) -> str:
+        return f"{cls.full_path}{cls.url(**params)}"
 
     @classmethod
     def parse_body(cls, data: Any) -> BaseModel:
