@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from press_api_spec.proxy_service_v1.base import EmptyResponse, Paginated, PaginationParams
 
 __all__ = [
+    "DomainType",
     "DomainStatus",
     "TlsStatus",
     "DnsRecord",
@@ -22,6 +23,11 @@ __all__ = [
     "RenewCertificateResponse",
     "DeleteDomainResponse",
 ]
+
+
+class DomainType(str, Enum):
+    CUSTOM = "custom"
+    ROOT_SUBDOMAIN = "root_subdomain"
 
 
 class DomainStatus(str, Enum):
@@ -101,6 +107,9 @@ class Domain(BaseModel):
                     "error_message": None,
                     "created_at_unix": 1736935200,
                     "updated_at_unix": 1736942400,
+                    "domain_type": "custom",
+                    "subdomain": None,
+                    "root_domain_id": None,
                 }
             ]
         }
@@ -115,10 +124,15 @@ class Domain(BaseModel):
     error_message: str | None = None
     created_at_unix: int
     updated_at_unix: int
+    domain_type: DomainType = DomainType.CUSTOM
+    subdomain: str | None = None
+    root_domain_id: str | None = None
 
 
 class RegisterDomainRequest(BaseModel):
-    domain: str = Field(examples=["api.example.com", "*.example.com"])
+    domain: str | None = Field(default=None, examples=["api.example.com", "*.example.com"])
+    subdomain: str | None = Field(default=None, examples=["api", "*"])
+    root_domain_id: str | None = Field(default=None, examples=["example.com"])
 
 
 class RegisterDomainResponse(BaseModel):
