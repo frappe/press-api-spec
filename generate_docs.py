@@ -321,24 +321,25 @@ def _html(specs: list[tuple[ServiceSpec, dict[str, Any]]]) -> str:
     #svc-btn:hover {{ background: #61affe; color: #fff; }}
     #svc-btn:hover svg path {{ stroke: #fff; }}
     #svc-btn svg {{ width: 15px; height: 15px; flex-shrink: 0; }}
-    #dl-btn {{
+    #json-btn {{
       display: inline-flex;
       align-items: center;
       gap: 6px;
       padding: 4px 12px;
-      border: 1.5px solid #49cc90;
+      border: 1.5px solid #fca130;
       border-radius: 20px;
       background: #fff;
-      color: #49cc90;
+      color: #fca130;
       cursor: pointer;
       font-size: 13px;
       font-weight: 600;
       transition: background .15s, color .15s;
       margin-left: 8px;
+      text-decoration: none;
     }}
-    #dl-btn:hover {{ background: #49cc90; color: #fff; }}
-    #dl-btn:hover svg path {{ stroke: #fff; }}
-    #dl-btn svg {{ width: 15px; height: 15px; flex-shrink: 0; }}
+    #json-btn:hover {{ background: #fca130; color: #fff; }}
+    #json-btn:hover svg path {{ stroke: #fff; }}
+    #json-btn svg {{ width: 15px; height: 15px; flex-shrink: 0; }}
     #svc-menu {{
       display: none;
       position: absolute;
@@ -460,22 +461,25 @@ def _html(specs: list[tuple[ServiceSpec, dict[str, Any]]]) -> str:
         switcher.appendChild(menu);
         h1.appendChild(switcher);
 
-        const dlBtn = document.createElement("button");
-        dlBtn.id = "dl-btn";
-        dlBtn.title = "Download for local use";
-        dlBtn.innerHTML = 'Download <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3v13M12 16l-4-4M12 16l4-4M4 20h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-        dlBtn.addEventListener("click", () => {{
-          const html = document.documentElement.outerHTML;
-          const blob = new Blob([html], {{ type: "text/html" }});
-          const a = document.createElement("a");
-          a.href = URL.createObjectURL(blob);
-          a.download = "press-api-docs.html";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(a.href);
-        }});
-        h1.appendChild(dlBtn);
+        const jsonBtn = document.createElement("a");
+        jsonBtn.id = "json-btn";
+        jsonBtn.title = "Open OpenAPI JSON";
+        jsonBtn.target = "_blank";
+        jsonBtn.innerHTML = 'OpenAPI JSON <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16M4 10h16M4 14h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+        function updateJsonHref() {{
+          jsonBtn.href = allSpecs[currentIndex].slug + ".json";
+        }}
+        updateJsonHref();
+
+        // Override the original switchSpec to also update the JSON link
+        const origSwitchSpec = switchSpec;
+        switchSpec = function(i) {{
+          origSwitchSpec(i);
+          updateJsonHref();
+        }};
+
+        h1.appendChild(jsonBtn);
       }}
     }});
     observer.observe(document.getElementById("swagger-ui"), {{ childList: true, subtree: true }});
